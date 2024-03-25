@@ -3,11 +3,16 @@ package com.example.assignment_1
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
@@ -20,6 +25,10 @@ import com.example.assignment_1.ui.theme.Assignment_1Theme
 //import androidx.compose.material.Button
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
@@ -51,19 +60,34 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     Assignment_1Theme {
-//        Greeting("Android")
-        LoginScreenPreview()
+        Greeting("Android")
     }
 }
 
 @Composable
-fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
+fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLoginClick: () -> Unit) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        // Title: Meal Planner
+        Text(
+            text = "Meal Planner",
+            fontSize = 32.sp, // Adjust font size as needed
+            fontWeight = FontWeight.Bold, // Make text bold
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Subtitle: Get Healthy
+        Text(
+            text = "Get Healthy",
+            fontSize = 18.sp, // Adjust font size as needed
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
         // Username/Email TextField
         TextField(
             value = "", // You need to bind this to a state variable
@@ -102,9 +126,7 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
         ) {
             Text("Sign Up")
         }
-
-        // Optionally, include social media login buttons using Image or IconButton
-        // Add your social media login buttons here
+        GoogleSignInButton(onGoogleLoginClick)
     }
 }
 
@@ -112,8 +134,30 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
 @Composable
 fun LoginScreenPreview() {
     Assignment_1Theme {
-        LoginScreen(onLoginClick = { /*TODO*/ }) {
+        LoginScreen(onLoginClick = {}, //empty lambda for now,
+                    onSignUpClick = {}, // Empty lambda for now
+                    onGoogleLoginClick = {})
+    }
+}
 
+@Composable
+fun GoogleSignInButton(onClick: () -> Unit) {
+    val googleLogo: Painter = painterResource(id = R.drawable.google_logo) // Replace R.drawable.google_logo with your Google logo resource
+
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = googleLogo,
+                contentDescription = "Google Logo",
+                modifier = Modifier.size(24.dp) // Adjust size as needed
+            )
+            Spacer(modifier = Modifier.width(8.dp)) // Add spacing between the logo and text
+            Text("Sign In with Google")
         }
     }
 }
