@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,12 +22,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.sharp.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
@@ -51,7 +51,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.ViewModel
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import com.google.firebase.perf.util.Timer
+
 //import androidx.compose.ui.Modifier
 
 class MainActivity : ComponentActivity() {
@@ -193,6 +200,18 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 }
 
 @Composable
+fun FeatureRow(icon: ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text(text = text)
+    }
+}
+
+@Composable
 fun HomeScreen(navController: NavController) {
     Surface(color = MaterialTheme.colorScheme.surface) {
         Column(
@@ -202,21 +221,64 @@ fun HomeScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Welcome to MealMate, mate!")
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate("mealList") }) {
-                Text(text = "View Meals")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate("shoppingList") }) {
-                Text(text = "View Shopping List")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate("settings") }) {
-                Text(text = "Settings")
-            }
-        }
-        Box(modifier = Modifier.fillMaxSize()) {
+            Text(text = "MealMate - Plan, Cook, Eat.",
+                textAlign = TextAlign.Center,
+                style = TextStyle(fontWeight = FontWeight.Bold,
+                fontSize = 32.sp, // Adjust size as needed
+                color = MaterialTheme.colorScheme.onSurface))
+            Text(
+                text = "Streamline your meals, save time & money, and eat healthy!",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+
+            // Plan your week section
+            Text(
+                text = "Plan your week in minutes:",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            // Carousel of cuisines
+            // Video clip of drag-and-drop
+            // Image of grocery list
+            // Features section
+            Text(
+                text = "Features you'll love:",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            // Feature icons with text
+            FeatureRow(
+                icon = Icons.Default.Timer,
+                text = "30-minute meals: Quick and easy recipes to fit your busy schedule."
+            )
+            FeatureRow(
+                icon = Icons.Default.Filter,
+                text = "Dietary filters: Find meals that meet your specific needs."
+            )
+            FeatureRow(
+                icon = Icons.Default.RestaurantMenu,
+                text = "Leftover magic: Repurpose ingredients to avoid food waste."
+            )
+            FeatureRow(
+                icon = Icons.Default.FamilyRestroom,
+                text = "Family-friendly options: Keep everyone happy with kid-approved meals."
+            )
+            FeatureRow(
+                icon = Icons.Default.Phonelink,
+                text = "Offline access: Take your meal plan anywhere."
+            )
+
+            // Get started section
+            Text(
+                text = "Get started today!",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
             // add your column here (with align modifier)
             Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                 BottomNavigation(
@@ -232,8 +294,8 @@ fun HomeScreen(navController: NavController) {
                     BottomNavigationItem(
                         selected = navController.currentDestination?.route == "shoppingList",
                         onClick = { navController.navigate("shoppingList") },
-                        icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Shopping List") },
-                        label = { Text("Shopping") }
+                        icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                        label = { Text("Diet Planner") }
                     )
                     BottomNavigationItem(
                         selected = navController.currentDestination?.route == "settings",
@@ -246,6 +308,7 @@ fun HomeScreen(navController: NavController) {
             }
         }
     }
+}
 }
 
 @Preview(showBackground = true)
@@ -306,130 +369,29 @@ class SettingsViewModel : ViewModel() {
 fun SettingsScreenPreview() {
     SettingsScreen(navController = rememberNavController(), viewModel = SettingsViewModel())
 }
-//
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun HomeScreenProto() {
-//    Scaffold(
-//        topBar = {
-//            TopAppBar(
-//                title = {
-//                    Text(
-//                        text = "MealMate",
-//                        style = MaterialTheme.typography.bodySmall
-//                    )
-//                },
-//                actions = {
-//                    IconButton(onClick = { /* Navigate to Settings Screen */ }) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.ic_settings),
-//                            contentDescription = "Settings"
-//                        )
-//                    }
-//                    IconButton(onClick = { /* Navigate to Recipe Search Screen */ }) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.ic_search),
-//                            contentDescription = "Search"
-//                        )
-//                    }
-//                }
-//            )
-//        },
-//        bottomBar = {
-//            BottomAppBar(
-//                backgroundColor = MaterialTheme.colorScheme.surface,
-//                content = {
-//                    BottomNavigation {
-//                        // Navigation icons go here
-//                    }
-//                }
-//            )
-//        },
-//        content = {it
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(16.dp),
-//                verticalArrangement = Arrangement.spacedBy(16.dp)
-//            ) {
-//                // Meal Planning Section
-//                Card(
-//                    elevation = 4.dp,
-//                    modifier = Modifier.fillMaxWidth()
-//                ) {
-//                    Column(
-//                        modifier = Modifier.padding(16.dp)
-//                    ) {
-//                        Text(
-//                            text = "This Week's Meals",
-//                            style = MaterialTheme.typography.bodySmall
-//                        )
-//                        LazyColumn {
-//                            items(listOf("Meal 1", "Meal 2", "Meal 3")) { meal ->
-//                                MealCard(meal = meal)
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                // Quick Actions Section
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.SpaceEvenly
-//                ) {
-//                    Button(
-//                        onClick = { /* Open Diet Selector Screen */ }
-//                    ) {
-//                        Text(text = "Diet Selector")
-//                    }
-//                    Button(
-//                        onClick = { /* Open Calorie Tracker Screen */ }
-//                    ) {
-//                        Text(text = "Calorie Tracker")
-//                    }
-//                }
-//
-//                // Nutrition Breakdown Section
-//                Card(
-//                    elevation = 4.dp,
-//                    modifier = Modifier.fillMaxWidth()
-//                ) {
-//                    Column(
-//                        modifier = Modifier.padding(16.dp)
-//                    ) {
-//                        Text(
-//                            text = "Nutrition at a Glance",
-//                            style = MaterialTheme.typography.h6
-//                        )
-//                        // Pie Chart and text summary go here
-//                    }
-//                }
-//            }
-//        }
-//    )
-//}
-//
-//@Composable
-//fun MealCard(meal: String) {
-//    Row(
-//        verticalAlignment = Alignment.CenterVertically,
-//        modifier = Modifier.fillMaxWidth(),
-//        horizontalArrangement = Arrangement.SpaceBetween
-//    ) {
-//        Image(
-//            painter = painterResource(id = R.drawable.placeholder),
-//            contentDescription = null,
-//            modifier = Modifier.size(50.dp)
-//        )
-//        Column {
-//            Text(text = meal, style = MaterialTheme.typography.bodySmall)
-//            Text(text = "Monday", style = MaterialTheme.typography.bodyMedium)
-//        }
-//    }
-//}
-//
-//@Preview
-//@Composable
-//fun HomeScreenProtoPreview() {
-//    HomeScreen()
-//}
+
+@Composable
+fun MyButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = contentColorFor(backgroundColor),
+    elevation: Shape = ButtonDefaults.elevatedShape,
+    shape: Shape = MaterialTheme.shapes.small,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            contentColor = contentColor
+        ),
+        shape = shape,
+        interactionSource = interactionSource
+    ) {
+        Text(text = text)
+    }
+}
