@@ -194,11 +194,6 @@ fun GoogleSignInButton(onClick: () -> Unit) {
         }
     }
 }
-sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
-    data object Home : BottomNavItem("home", Icons.Default.Home, "Home")
-    data object Search : BottomNavItem("search", Icons.Default.Search, "Search")
-    data object Profile : BottomNavItem("profile", Icons.Default.Person, "Profile")
-}
 
 @Composable
 fun FeatureRow(icon: ImageVector, text: String) {
