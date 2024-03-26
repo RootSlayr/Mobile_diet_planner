@@ -5,7 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,9 +19,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,8 +50,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.ViewModel
-import org.jfree
-
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.ui.graphics.vector.ImageVector
+//import androidx.compose.ui.Modifier
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +64,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SettingsScreenPreview()
+                    HomeScreenPreview()
                 }
             }
         }
@@ -85,7 +98,7 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLog
     ) {
         // Title: Meal Planner
         Text(
-            text = "Meal Planner",
+            text = "MealMate",
             fontSize = 32.sp, // Adjust font size as needed
             fontWeight = FontWeight.Bold, // Make text bold
             modifier = Modifier.padding(bottom = 8.dp)
@@ -93,7 +106,7 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLog
 
         // Subtitle: Get Healthy
         Text(
-            text = "Get Healthy",
+            text = "Get Healthy Mate",
             fontSize = 18.sp, // Adjust font size as needed
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -173,6 +186,11 @@ fun GoogleSignInButton(onClick: () -> Unit) {
         }
     }
 }
+sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
+    data object Home : BottomNavItem("home", Icons.Default.Home, "Home")
+    data object Search : BottomNavItem("search", Icons.Default.Search, "Search")
+    data object Profile : BottomNavItem("profile", Icons.Default.Person, "Profile")
+}
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -184,7 +202,7 @@ fun HomeScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Welcome to Meal Planner App!")
+            Text(text = "Welcome to MealMate, mate!")
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { navController.navigate("mealList") }) {
                 Text(text = "View Meals")
@@ -198,35 +216,36 @@ fun HomeScreen(navController: NavController) {
                 Text(text = "Settings")
             }
         }
-        Scaffold(
-            bottomBar = {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // add your column here (with align modifier)
+            Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                 BottomNavigation(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = MaterialTheme.colorScheme.surface
                 ) {
                     BottomNavigationItem(
-                        selected = false,
+                        selected = navController.currentDestination?.route == "mealList",
                         onClick = { navController.navigate("mealList") },
-                        icon = { Icon(Icons.Default.Fastfood, contentDescription = "Meals") },
+                        icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
                         label = { Text("Meals") }
                     )
                     BottomNavigationItem(
-                        selected = false,
+                        selected = navController.currentDestination?.route == "shoppingList",
                         onClick = { navController.navigate("shoppingList") },
                         icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Shopping List") },
                         label = { Text("Shopping") }
                     )
                     BottomNavigationItem(
-                        selected = false,
+                        selected = navController.currentDestination?.route == "settings",
                         onClick = { navController.navigate("settings") },
                         icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                         label = { Text("Settings") }
                     )
                 }
+
             }
+        }
     }
-
-
 }
 
 @Preview(showBackground = true)
@@ -287,3 +306,130 @@ class SettingsViewModel : ViewModel() {
 fun SettingsScreenPreview() {
     SettingsScreen(navController = rememberNavController(), viewModel = SettingsViewModel())
 }
+//
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun HomeScreenProto() {
+//    Scaffold(
+//        topBar = {
+//            TopAppBar(
+//                title = {
+//                    Text(
+//                        text = "MealMate",
+//                        style = MaterialTheme.typography.bodySmall
+//                    )
+//                },
+//                actions = {
+//                    IconButton(onClick = { /* Navigate to Settings Screen */ }) {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.ic_settings),
+//                            contentDescription = "Settings"
+//                        )
+//                    }
+//                    IconButton(onClick = { /* Navigate to Recipe Search Screen */ }) {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.ic_search),
+//                            contentDescription = "Search"
+//                        )
+//                    }
+//                }
+//            )
+//        },
+//        bottomBar = {
+//            BottomAppBar(
+//                backgroundColor = MaterialTheme.colorScheme.surface,
+//                content = {
+//                    BottomNavigation {
+//                        // Navigation icons go here
+//                    }
+//                }
+//            )
+//        },
+//        content = {it
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(16.dp),
+//                verticalArrangement = Arrangement.spacedBy(16.dp)
+//            ) {
+//                // Meal Planning Section
+//                Card(
+//                    elevation = 4.dp,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp)
+//                    ) {
+//                        Text(
+//                            text = "This Week's Meals",
+//                            style = MaterialTheme.typography.bodySmall
+//                        )
+//                        LazyColumn {
+//                            items(listOf("Meal 1", "Meal 2", "Meal 3")) { meal ->
+//                                MealCard(meal = meal)
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                // Quick Actions Section
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceEvenly
+//                ) {
+//                    Button(
+//                        onClick = { /* Open Diet Selector Screen */ }
+//                    ) {
+//                        Text(text = "Diet Selector")
+//                    }
+//                    Button(
+//                        onClick = { /* Open Calorie Tracker Screen */ }
+//                    ) {
+//                        Text(text = "Calorie Tracker")
+//                    }
+//                }
+//
+//                // Nutrition Breakdown Section
+//                Card(
+//                    elevation = 4.dp,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Column(
+//                        modifier = Modifier.padding(16.dp)
+//                    ) {
+//                        Text(
+//                            text = "Nutrition at a Glance",
+//                            style = MaterialTheme.typography.h6
+//                        )
+//                        // Pie Chart and text summary go here
+//                    }
+//                }
+//            }
+//        }
+//    )
+//}
+//
+//@Composable
+//fun MealCard(meal: String) {
+//    Row(
+//        verticalAlignment = Alignment.CenterVertically,
+//        modifier = Modifier.fillMaxWidth(),
+//        horizontalArrangement = Arrangement.SpaceBetween
+//    ) {
+//        Image(
+//            painter = painterResource(id = R.drawable.placeholder),
+//            contentDescription = null,
+//            modifier = Modifier.size(50.dp)
+//        )
+//        Column {
+//            Text(text = meal, style = MaterialTheme.typography.bodySmall)
+//            Text(text = "Monday", style = MaterialTheme.typography.bodyMedium)
+//        }
+//    }
+//}
+//
+//@Preview
+//@Composable
+//fun HomeScreenProtoPreview() {
+//    HomeScreen()
+//}
