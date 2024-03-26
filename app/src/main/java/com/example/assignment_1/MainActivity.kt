@@ -82,6 +82,13 @@ import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.toArgb
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import androidx.compose.runtime.saveable.rememberSaveable
+
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -94,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PreviewDietSelectionPage()
+                    ProfilePreview()
                 }
             }
         }
@@ -720,4 +727,177 @@ fun DietSelectionPage(onDietSelected: (String) -> Unit, navController: NavContro
 fun PreviewDietSelectionPage() {
     val navController = rememberNavController()
     DietSelectionPage({},navController)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DisplayDatePicker() {
+    val calendar = Calendar.getInstance()
+    calendar.set(2024, 0, 1) // month (0) is January
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = Instant.now().toEpochMilli()
+    )
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by rememberSaveable { mutableStateOf(calendar.timeInMillis) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Meal Planner Screen", fontSize = 30.sp, style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Set your target",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDatePicker = false
+                        selectedDate = datePickerState.selectedDateMillis!!
+                    }) {
+                        Text(
+                            text = "OK",
+                            modifier = Modifier.padding(16.dp), // Add the modifier parameter
+                            style = MaterialTheme.typography.headlineSmall)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text(
+                            text = "Cancel",
+                            modifier = Modifier.padding(16.dp), // Add the modifier parameter
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+        Button(
+            onClick = { showDatePicker = true }
+        ) {
+            Text(text = "Enter Date of target",
+                modifier = Modifier.padding(16.dp), // Add the modifier parameter
+                style = MaterialTheme.typography.headlineSmall)
+        }
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.ROOT)
+        Text(
+            text = "Date of target: ${formatter.format(Date(selectedDate))}"
+        )
+
+        val mealPlans = listOf("Celebration or Seasonal Meal Plans", "Standard Meal Plans", "Specialized Meal Plans", "Cuisine-Based Meal Plans", "Meal Plans for Specific Goals", "Customizable Meal Plans", "Celebration or Seasonal Meal Plans")
+        var isExpanded by remember { mutableStateOf(false) }
+        var selectedMealPlanState by remember { mutableStateOf(mealPlans[0]) }
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Choose your Meal Plan",
+                style = MaterialTheme.typography.labelLarge
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { isExpanded = it },
+            ) {
+                TextField(
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .focusProperties { canFocus = false }
+                        .padding(bottom = 8.dp),
+                    readOnly = true,
+                    value = selectedMealPlanState,
+                    onValueChange = {},
+                    label = { Text("Meal Plan") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+                    }
+                )
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false }
+                ) {
+                    mealPlans.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                selectedMealPlanState = selectionOption
+                                isExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true)
+@Composable
+private fun PreviewDisplayDatePicker() {
+    Assignment_1Theme {
+        DisplayDatePicker()
+    }
+}
+
+@Composable
+fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(text = "Profile", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn {
+                items(viewModel.profileItem) {setting ->
+                    ProfileItem(setting = setting)
+                    Divider()
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = { /* Handle save button click */ },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(text = "Save")
+            }
+        }
+    }
+}
+
+@Composable
+fun ProfileItem(setting: String) {
+    Text(
+        text = setting,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+    )
+}
+
+
+class ProfileViewModel : ViewModel() {
+    val profileItem = listOf(
+        "User Information Display",
+        "Edit Profile",
+        "Dietary Preferences",
+        "Fitness Goals",
+        "Meal Plans",
+        "Social Features"
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ProfilePreview(){
+    val navController = rememberNavController()
+    ProfileScreen(navController, viewModel = ProfileViewModel())
 }
