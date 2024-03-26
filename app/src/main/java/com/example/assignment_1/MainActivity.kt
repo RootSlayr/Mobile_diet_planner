@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
@@ -24,12 +27,19 @@ import androidx.compose.ui.unit.dp
 import com.example.assignment_1.ui.theme.Assignment_1Theme
 //import androidx.compose.material.Button
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.ViewModel
+import org.jfree
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreenPreview()
+                    SettingsScreenPreview()
                 }
             }
         }
@@ -146,7 +156,9 @@ fun GoogleSignInButton(onClick: () -> Unit) {
 
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -160,4 +172,118 @@ fun GoogleSignInButton(onClick: () -> Unit) {
             Text("Sign In with Google")
         }
     }
+}
+
+@Composable
+fun HomeScreen(navController: NavController) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Welcome to Meal Planner App!")
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { navController.navigate("mealList") }) {
+                Text(text = "View Meals")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { navController.navigate("shoppingList") }) {
+                Text(text = "View Shopping List")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { navController.navigate("settings") }) {
+                Text(text = "Settings")
+            }
+        }
+        Scaffold(
+            bottomBar = {
+                BottomNavigation(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = MaterialTheme.colorScheme.surface
+                ) {
+                    BottomNavigationItem(
+                        selected = false,
+                        onClick = { navController.navigate("mealList") },
+                        icon = { Icon(Icons.Default.Fastfood, contentDescription = "Meals") },
+                        label = { Text("Meals") }
+                    )
+                    BottomNavigationItem(
+                        selected = false,
+                        onClick = { navController.navigate("shoppingList") },
+                        icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Shopping List") },
+                        label = { Text("Shopping") }
+                    )
+                    BottomNavigationItem(
+                        selected = false,
+                        onClick = { navController.navigate("settings") },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") }
+                    )
+                }
+            }
+    }
+
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview(){
+    val navController = rememberNavController()
+    HomeScreen(navController)
+}
+
+@Composable
+fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(text = "Settings", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn {
+                items(viewModel.settingsItems) {setting ->
+                    SettingsItem(setting = setting)
+                    Divider()
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = { /* Handle save button click */ },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(text = "Save")
+            }
+        }
+    }
+}
+
+@Composable
+fun SettingsItem(setting: String) {
+    Text(
+        text = setting,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+    )
+}
+class SettingsViewModel : ViewModel() {
+    val settingsItems = listOf(
+        "Notification",
+        "Sound",
+        "Dark Mode",
+        // Add more settings items as needed
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    SettingsScreen(navController = rememberNavController(), viewModel = SettingsViewModel())
 }
