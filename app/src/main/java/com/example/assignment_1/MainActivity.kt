@@ -57,9 +57,18 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import com.google.firebase.perf.util.Timer
-
-//import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.tooling.preview.*
+import androidx.compose.ui.unit.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.drawscope.Stroke
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,7 +80,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreenPreview()
+                    PreviewNutritionPage()
                 }
             }
         }
@@ -383,3 +392,60 @@ fun MyButton(
     }
 }
 
+@Composable
+fun NutritionPage(nutritionValues: Map<String, Float>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Nutrition Values",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        NutritionPieChart(nutritionValues)
+    }
+}
+
+@Composable
+fun NutritionPieChart(nutritionValues: Map<String, Float>) {
+    val totalValue = nutritionValues.values.sum()
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .border(width = 1.dp, color = Color.Black)
+    ) {
+        var startAngle = 0f
+        nutritionValues.forEach { (label, value) ->
+            val sweepAngle = (value / totalValue) * 360
+            drawArc(
+                color = getRandomColor(),
+                startAngle = startAngle,
+                sweepAngle = sweepAngle,
+                useCenter = true,
+                topLeft = Offset(size.width / 4, size.height / 4),
+                size = Size(size.width / 2, size.height / 2),
+                style = Stroke(width = 30f)
+            )
+            startAngle += sweepAngle
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewNutritionPage() {
+    val nutritionValues = mapOf(
+        "Protein" to 20f,
+        "Carbohydrates" to 50f,
+        "Fat" to 30f
+    )
+    NutritionPage(nutritionValues)
+}
+
+fun getRandomColor(): Color {
+    val colors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan)
+    return colors.random()
+}
