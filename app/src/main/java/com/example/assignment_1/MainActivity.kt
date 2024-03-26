@@ -71,26 +71,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeScreenPreview()
+                    LoginScreenPreview()
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Assignment_1Theme {
-        Greeting("Android")
     }
 }
 
@@ -277,6 +261,9 @@ fun HomeScreen(navController: NavController) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
+            MyButton("View Diet Options", {})
+            MyButton("View Meal Plans", {})
+            MyButton("View Nutrition Chart", {})
 
             Box(modifier = Modifier.fillMaxSize()) {
             // add your column here (with align modifier)
@@ -395,3 +382,4 @@ fun MyButton(
         Text(text = text)
     }
 }
+
