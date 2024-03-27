@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ProfilePreview()
+                    SettingsScreenPreview()
                 }
             }
         }
@@ -338,11 +338,17 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Text(text = "Settings", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Settings", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(viewModel.settingsItems) {setting ->
-                    SettingsItem(setting = setting)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth() // Fill the width of the column
+                            .height(72.dp) // Adjust the height as needed
+                    ) {
+                        SettingsItem(setting = setting)
+                    }
                     Divider()
                 }
             }
@@ -354,6 +360,35 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 Text(text = "Save")
             }
         }
+        Box(modifier = Modifier.fillMaxSize()) {
+            // add your column here (with align modifier)
+            Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                BottomNavigation(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = MaterialTheme.colorScheme.surface
+                ) {
+                    BottomNavigationItem(
+                        selected = navController.currentDestination?.route == "mealList",
+                        onClick = { navController.navigate("mealList") },
+                        icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
+                        label = { Text("Meals") }
+                    )
+                    BottomNavigationItem(
+                        selected = navController.currentDestination?.route == "shoppingList",
+                        onClick = { navController.navigate("shoppingList") },
+                        icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                        label = { Text("Diet Planner") }
+                    )
+                    BottomNavigationItem(
+                        selected = navController.currentDestination?.route == "settings",
+                        onClick = { navController.navigate("settings") },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") }
+                    )
+                }
+
+            }
+        }
     }
 }
 
@@ -361,9 +396,9 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
 fun SettingsItem(setting: String) {
     Text(
         text = setting,
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
         modifier = Modifier
-            .padding(vertical = 8.dp)
+            .padding(vertical = 16.dp, horizontal = 16.dp)
             .fillMaxWidth()
     )
 }
@@ -372,6 +407,13 @@ class SettingsViewModel : ViewModel() {
         "Notification",
         "Sound",
         "Dark Mode",
+        "Language",
+        "Theme Color",
+        "Font Size",
+        "Privacy",
+        "Security",
+        "Data Usage",
+        "Account",
         // Add more settings items as needed
     )
 }
@@ -409,7 +451,7 @@ fun MyButton(
 }
 
 @Composable
-fun NutritionPage(foodName: String, ingredients: List<String>, nutritionValues: Map<String, Float>) {
+fun NutritionPage(navController: NavController, foodName: String, ingredients: List<String>, nutritionValues: Map<String, Float>) {
     val paint = remember {
         Paint().apply {
             color = Color.Black.toArgb() // Set paint color
@@ -438,6 +480,7 @@ fun NutritionPage(foodName: String, ingredients: List<String>, nutritionValues: 
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        val navController = rememberNavController()
         NutritionPieChart(nutritionValues, ingredients, paint, nutrientColors)
         NutritionLegend(nutritionValues, nutrientColors)
         Spacer(modifier = Modifier.height(16.dp))
@@ -457,6 +500,35 @@ fun NutritionPage(foodName: String, ingredients: List<String>, nutritionValues: 
         )
         Spacer(modifier = Modifier.height(8.dp))
         NutritionTable(nutritionValues)
+        Box(modifier = Modifier.fillMaxSize()) {
+            // add your column here (with align modifier)
+            Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                BottomNavigation(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = MaterialTheme.colorScheme.surface
+                ) {
+                    BottomNavigationItem(
+                        selected = navController.currentDestination?.route == "mealList",
+                        onClick = { navController.navigate("mealList") },
+                        icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
+                        label = { Text("Meals") }
+                    )
+                    BottomNavigationItem(
+                        selected = navController.currentDestination?.route == "shoppingList",
+                        onClick = { navController.navigate("shoppingList") },
+                        icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                        label = { Text("Diet Planner") }
+                    )
+                    BottomNavigationItem(
+                        selected = navController.currentDestination?.route == "settings",
+                        onClick = { navController.navigate("settings") },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") }
+                    )
+                }
+
+            }
+        }
     }
 }
 
@@ -525,7 +597,8 @@ fun PreviewNutritionPage() {
     )
     val foodName = "Sample Food"
     val ingredients = listOf("Ingredient 1", "Ingredient 2", "Ingredient 3")
-    NutritionPage(foodName, ingredients, nutritionValues)
+    val navController = rememberNavController()
+    NutritionPage(navController,foodName, ingredients, nutritionValues)
 }
 
 @Composable
@@ -732,7 +805,7 @@ fun PreviewDietSelectionPage() {
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisplayDatePicker() {
+fun DisplayDatePicker(navController: NavController) {
     val calendar = Calendar.getInstance()
     calendar.set(2024, 0, 1) // month (0) is January
     val datePickerState = rememberDatePickerState(
@@ -742,10 +815,10 @@ fun DisplayDatePicker() {
     var selectedDate by rememberSaveable { mutableStateOf(calendar.timeInMillis) }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Meal Planner Screen", fontSize = 30.sp, style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Meal Planner", fontSize = 30.sp, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Set your target",
+            text = "Set your target, Follow your Diet",
             style = MaterialTheme.typography.headlineSmall
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -781,7 +854,7 @@ fun DisplayDatePicker() {
         ) {
             Text(text = "Enter Date of target",
                 modifier = Modifier.padding(16.dp), // Add the modifier parameter
-                style = MaterialTheme.typography.headlineSmall)
+                style = MaterialTheme.typography.headlineMedium)
         }
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.ROOT)
         Text(
@@ -833,6 +906,36 @@ fun DisplayDatePicker() {
                 }
             }
         }
+
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        // add your column here (with align modifier)
+        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+            BottomNavigation(
+                modifier = Modifier.fillMaxWidth(),
+                backgroundColor = MaterialTheme.colorScheme.surface
+            ) {
+                BottomNavigationItem(
+                    selected = navController.currentDestination?.route == "mealList",
+                    onClick = { navController.navigate("mealList") },
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
+                    label = { Text("Meals") }
+                )
+                BottomNavigationItem(
+                    selected = navController.currentDestination?.route == "shoppingList",
+                    onClick = { navController.navigate("shoppingList") },
+                    icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                    label = { Text("Diet Planner") }
+                )
+                BottomNavigationItem(
+                    selected = navController.currentDestination?.route == "settings",
+                    onClick = { navController.navigate("settings") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") }
+                )
+            }
+
+        }
     }
 }
 
@@ -840,9 +943,8 @@ fun DisplayDatePicker() {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDisplayDatePicker() {
-    Assignment_1Theme {
-        DisplayDatePicker()
-    }
+    val navController = rememberNavController()
+    DisplayDatePicker(navController)
 }
 
 @Composable
@@ -868,6 +970,35 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel) {
             ) {
                 Text(text = "Save")
             }
+        }
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        // add your column here (with align modifier)
+        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+            BottomNavigation(
+                modifier = Modifier.fillMaxWidth(),
+                backgroundColor = MaterialTheme.colorScheme.surface
+            ) {
+                BottomNavigationItem(
+                    selected = navController.currentDestination?.route == "mealList",
+                    onClick = { navController.navigate("mealList") },
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
+                    label = { Text("Meals") }
+                )
+                BottomNavigationItem(
+                    selected = navController.currentDestination?.route == "shoppingList",
+                    onClick = { navController.navigate("shoppingList") },
+                    icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                    label = { Text("Diet Planner") }
+                )
+                BottomNavigationItem(
+                    selected = navController.currentDestination?.route == "settings",
+                    onClick = { navController.navigate("settings") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") }
+                )
+            }
+
         }
     }
 }
