@@ -1,15 +1,23 @@
 package com.example.assignment_1
 
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
+import android.graphics.Paint
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,43 +26,52 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.FamilyRestroom
+import androidx.compose.material.icons.filled.Filter
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocalPizza
+import androidx.compose.material.icons.filled.Phonelink
+import androidx.compose.material.icons.filled.RestaurantMenu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TextField
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.example.assignment_1.ui.theme.Assignment_1Theme
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.lifecycle.ViewModel
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -66,9 +83,39 @@ import androidx.compose.foundation.background
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.focus.focusProperties
+
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.assignment_1.entity.UserData
+import com.example.assignment_1.service.rememberFirebaseAuthLauncher
+import com.example.assignment_1.ui.theme.Assignment_1Theme
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.auth
+import com.google.firebase.database.database
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -76,12 +123,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         setContent {
             Assignment_1Theme {
                 // A surface container using the 'background' color from the theme
@@ -92,15 +142,142 @@ class MainActivity : ComponentActivity() {
                     NavigationHost()
 //                    SettingsScreenPreview()
                     HomeScreenPreview()
-                }
-            }
+
+//            Assignment_1Theme {
+            // A surface container using the 'background' color from the theme
+//                Surface(
+//                    modifier = Modifier.fillMaxSize(),
+//                    color = MaterialTheme.colorScheme.background
+//                ) {
+//                    SettingsScreenPreview()
+//                }
+//            }
+            AppContent()
         }
+
+
+    }
+}
+
+// Variable for database
+val database = Firebase.database.reference
+val tables = database.child(R.string.DATABASE.toString())
+    .child(R.string.DB_ENV.toString())
+
+@Composable
+fun AppContent() {
+    val navController = rememberNavController()
+    val isLoggedIn = remember { mutableStateOf(false) }
+
+    Firebase.auth.addAuthStateListener { auth ->
+        isLoggedIn.value = auth.currentUser != null
+    }
+    println("Current logged in user is ${Firebase.auth.currentUser.toString()}")
+    NavHost(navController, startDestination = if (isLoggedIn.value) R.string.HOME_SCREEN.toString() else R.string.LOGIN_SCREEN.toString()) {
+        composable(R.string.LOGIN_SCREEN.toString()) {
+            LoginScreen(navController)
+        }
+        composable(R.string.HOME_SCREEN.toString()) {
+            HomeScreen(navController)
+        }
+        composable(R.string.SIGNUP_SCREEN.toString()) {
+            SignUpScreen(navController = navController)
+        }
+        composable(R.string.FORGOT_PASSWORD_SCREEN.toString()){
+            ForgotPasswordScreen(navController = navController)
+        }
+
     }
 }
 
 @Composable
-fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLoginClick: () -> Unit) {
+fun ErrorPopup(message: String, onDismiss: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.error)
+            .padding(16.dp)
+    ) {
+        Text(text = message, color = Color.White)
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick =onDismiss) {
+            Text(text = "Dismiss")
+        }
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MessagePopup(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+    icon: ImageVector,
+) {
+    AlertDialog(
+        icon = {
+            Icon(icon, contentDescription = "Example Icon")
+        },
+        title = {
+            Text(text = dialogTitle)
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
+            }
+        }
+    )
+}
+
+
+
+@Preview
+@Composable
+fun MessagePopupPreview(){
+    MessagePopup(
+        onDismissRequest = { },
+        onConfirmation = { },
+        dialogTitle = "Alert dialog example",
+        dialogText = "This is an example of an alert dialog with buttons.",
+        icon = Icons.Default.Info
+    )
+}
+
+@Composable
+fun LoginScreen(navController: NavController) {
+    var showError by remember { mutableStateOf(false) }
+    var error_message by remember { mutableStateOf("Oops! Something went wrong")}
+    if (showError) {
+        MessagePopup(
+            onDismissRequest = { showError = false },
+            onConfirmation = { showError = false},
+            dialogTitle = "Error logging in",
+            dialogText = error_message,
+            icon = Icons.Default.Error
+        )
+    }
+
+    var email by remember{mutableStateOf("")}
+    var password by remember{mutableStateOf("")}
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,8 +301,8 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLog
 
         // Username/Email TextField
         TextField(
-            value = "", // You need to bind this to a state variable
-            onValueChange = { /*TODO*/ },
+            value = email,
+            onValueChange = { email = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -134,8 +311,8 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLog
 
         // Password TextField
         TextField(
-            value = "", // You need to bind this to a state variable
-            onValueChange = { /*TODO*/ },
+            value = password,
+            onValueChange = { password = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -145,7 +322,17 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLog
 
         // Sign In Button
         Button(
-            onClick = onLoginClick,
+            onClick = {
+                Firebase.auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful)
+                            navController.navigate(R.string.HOME_SCREEN.toString())
+                        else {
+                            error_message = task.exception?.message!!
+                            showError = true
+                        }
+                    }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
@@ -155,31 +342,261 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit, onGoogleLog
 
         // Sign Up Button
         Button(
-            onClick = onSignUpClick,
+            onClick = {
+                navController.navigate(R.string.SIGNUP_SCREEN.toString())
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Sign Up")
         }
-        GoogleSignInButton(onGoogleLoginClick)
+        GoogleSignInButton(navController)
+
+//        forgot password
+        ClickableText(
+            text = AnnotatedString("Forgot Password ?"),
+            onClick = {
+                navController.navigate(R.string.FORGOT_PASSWORD_SCREEN.toString())
+            },
+            style = TextStyle(
+                textDecoration = TextDecoration.Underline,
+                color = Color.DarkGray,
+                textAlign = TextAlign.Center
+            ),
+            modifier =  Modifier.align(alignment = Alignment.CenterHorizontally)
+                .padding(5.dp)
+        )
+
     }
 }
+@Composable
+fun ForgotPasswordScreen(navController: NavController) {
+
+    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("Oops! Something went wrong")}
+    if (showError) {
+        MessagePopup(
+            onDismissRequest = { showError = false },
+            onConfirmation = { showError = false},
+            dialogTitle = "Error logging in",
+            dialogText = errorMessage,
+            icon = Icons.Default.Error
+        )
+    }
+    var showAlert by remember { mutableStateOf(false) }
+    var alertMessage by remember { mutableStateOf("")}
+    if (showAlert) {
+        MessagePopup(
+            onDismissRequest = {
+                showAlert = false
+                navController.navigate(R.string.LOGIN_SCREEN.toString())
+                               },
+            onConfirmation = {
+                showAlert = false
+                navController.navigate(R.string.LOGIN_SCREEN.toString())
+                             },
+            dialogTitle = "Hi User,",
+            dialogText = alertMessage,
+            icon = Icons.Default.Error
+        )
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Title: Meal Planner
+        Text(
+            text = "MealMate",
+            fontSize = 32.sp, // Adjust font size as needed
+            fontWeight = FontWeight.Bold, // Make text bold
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Subtitle: Get Healthy
+        Text(
+            text = "Get Healthy Mate",
+            fontSize = 18.sp, // Adjust font size as needed
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        var email by remember{ mutableStateOf("") }
+        // Username/Email TextField
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text("Username/Email") }
+        )
+
+        // Sign In Button
+        Button(
+            onClick = {
+                Firebase.auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            alertMessage = "An email with password reset link has been sent to your mail id. \n Thank You "
+                            showAlert = true
+                        }
+                        else {
+                            errorMessage = task.exception?.message!!
+                            showError = true
+                        }
+                    }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        ) {
+            Text("Reset Password")
+        }
+
+    }
+}
+
+
+@Composable
+fun SignUpScreen(navController: NavController) {
+    val PASS_REGEX = "^(?=.[0-9])(?=[a-z])(?=*[A-Z]).{8,}$"
+    var user by remember{mutableStateOf("")}
+    var email by remember{ mutableStateOf("") }
+    var dob by remember{ mutableStateOf(LocalDate.now()) }
+    var password by remember{mutableStateOf("")}
+    var confirm_password by remember{mutableStateOf("")}
+    var showError by remember { mutableStateOf(false) }
+    var error_message = "Oops! Something went wrong"
+    if (showError) {
+        ErrorPopup(message = error_message, onDismiss = { showError = false })
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Title: Meal Planner
+        Text(
+            text = "MealMate",
+            fontSize = 32.sp, // Adjust font size as needed
+            fontWeight = FontWeight.Bold, // Make text bold
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Subtitle: Get Healthy
+        Text(
+            text = "Get Healthy Mate",
+            fontSize = 18.sp, // Adjust font size as needed
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Username/Email TextField
+        TextField(
+            value = user, // You need to bind this to a state variable
+            onValueChange = { user = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text("Username/Email") }
+        )
+
+        // Password TextField
+        TextField(
+            value = password, // You need to bind this to a state variable
+            onValueChange = {password = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+        )
+
+        // Password TextField
+        TextField(
+            value = confirm_password, // You need to bind this to a state variable
+            onValueChange = { confirm_password = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text("Confirm Password") },
+            visualTransformation = PasswordVisualTransformation(),
+        )
+
+        // Sign In Button
+        Button(
+            onClick = {
+                if (password.length < 6) {
+                    error_message = "Password cannot less than 6 characters."
+                    showError = true
+                } else if (password.matches(Regex.fromLiteral(PASS_REGEX))) {
+                    error_message =
+                        "Password must contain at least 1 number, 1 upperCase and 1 LowerCase."
+                    showError = true
+                } else if (password.equals(confirm_password)) {
+                    error_message = "Password confirmation should matches current user."
+                }
+                Firebase.auth.createUserWithEmailAndPassword(user, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            navController.navigate(R.string.LOGIN_SCREEN.toString())
+                            tables.child(R.string.DB_USER.toString())
+                                .child(System.currentTimeMillis().toString())
+                                .setValue(UserData(name = email))
+                        }
+                        else {
+                            error_message = task.exception?.message!!
+                            showError = true
+                        }
+
+                    }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        ) {
+            Text("Sign Up")
+        }
+
+        GoogleSignInButton(navController)
+
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
     Assignment_1Theme {
-        LoginScreen(onLoginClick = {}, //empty lambda for now,
-                    onSignUpClick = {}, // Empty lambda for now
-                    onGoogleLoginClick = {})
+        LoginScreen(navController = rememberNavController()) // Empty lambda for now
     }
 }
 
 @Composable
-fun GoogleSignInButton(onClick: () -> Unit) {
-    val googleLogo: Painter = painterResource(id = R.drawable.google_logo) // Replace R.drawable.google_logo with your Google logo resource
-
+fun GoogleSignInButton(navController: NavController) {
+    val googleLogo: Painter =
+        painterResource(id = R.drawable.google_logo) // Replace R.drawable.google_logo with your Google logo resource
+    val context = LocalContext.current
+    var user by remember { mutableStateOf(Firebase.auth.currentUser) }
+    val launcher = rememberFirebaseAuthLauncher(
+        onAuthComplete = { result ->
+            user = result.user
+            navController.navigate(R.string.HOME_SCREEN.toString())
+        },
+        onAuthError = { user = null }
+    )
+    val token = stringResource(id = R.string.your_web_client_id)
     Button(
-        onClick = onClick,
+        onClick = {
+
+            val signIn_options =
+                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(token)
+                    .requestEmail()
+                    .build()
+            val googleSignInClient = GoogleSignIn.getClient(context, signIn_options)
+            launcher.launch(googleSignInClient.signInIntent)
+
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp)
@@ -220,11 +637,15 @@ fun HomeScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "MealMate - Plan, Cook, Eat.",
+            Text(
+                text = "MealMate - Plan, Cook, Eat.",
                 textAlign = TextAlign.Center,
-                style = TextStyle(fontWeight = FontWeight.Bold,
-                fontSize = 32.sp, // Adjust size as needed
-                color = MaterialTheme.colorScheme.onSurface))
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp, // Adjust size as needed
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            )
             Text(
                 text = "Streamline your meals, save time & money, and eat healthy!",
                 textAlign = TextAlign.Center,
@@ -280,14 +701,52 @@ fun HomeScreen(navController: NavController) {
             MyButton("View Meal Plans", {})
             MyButton("View Nutrition Chart", {})
             BottomNavigationBar(navController)
+            Box(modifier = Modifier.fillMaxSize()) {
+                // add your column here (with align modifier)
+                Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    BottomNavigation(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = MaterialTheme.colorScheme.surface
+                    ) {
+                        BottomNavigationItem(
+                            selected = navController.currentDestination?.route == "mealList",
+                            onClick = { navController.navigate("mealList") },
+                            icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
+                            label = { Text("Meals") }
+                        )
+                        BottomNavigationItem(
+                            selected = navController.currentDestination?.route == "shoppingList",
+                            onClick = { navController.navigate("shoppingList") },
+                            icon = {
+                                Icon(
+                                    Icons.Default.LocalPizza,
+                                    contentDescription = "Diet Planner"
+                                )
+                            },
+                            label = { Text("Diet Planner") }
+                        )
+                        BottomNavigationItem(
+                            selected = navController.currentDestination?.route == "settings",
+                            onClick = { navController.navigate("settings") },
+                            icon = {
+                                Icon(
+                                    Icons.Default.Settings,
+                                    contentDescription = "Settings"
+                                )
+                            },
+                            label = { Text("Settings") }
+                        )
+                    }
 
+                }
+            }
+        }
     }
-}
 }
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview(){
+fun HomeScreenPreview() {
     val navController = rememberNavController()
     HomeScreen(navController)
 }
@@ -303,7 +762,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             Text(text = "Settings", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
-                items(viewModel.settingsItems) {setting ->
+                items(viewModel.settingsItems) { setting ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth() // Fill the width of the column
@@ -338,7 +797,12 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                     BottomNavigationItem(
                         selected = navController.currentDestination?.route == "shoppingList",
                         onClick = { navController.navigate("shoppingList") },
-                        icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                        icon = {
+                            Icon(
+                                Icons.Default.LocalPizza,
+                                contentDescription = "Diet Planner"
+                            )
+                        },
                         label = { Text("Diet Planner") }
                     )
                     BottomNavigationItem(
@@ -364,6 +828,7 @@ fun SettingsItem(setting: String) {
             .fillMaxWidth()
     )
 }
+
 class SettingsViewModel : ViewModel() {
     val settingsItems = listOf(
         "Notification",
@@ -413,7 +878,12 @@ fun MyButton(
 }
 
 @Composable
-fun NutritionPage(navController: NavController, foodName: String, ingredients: List<String>, nutritionValues: Map<String, Float>) {
+fun NutritionPage(
+    navController: NavController,
+    foodName: String,
+    ingredients: List<String>,
+    nutritionValues: Map<String, Float>
+) {
     val paint = remember {
         Paint().apply {
             color = Color.Black.toArgb() // Set paint color
@@ -478,7 +948,12 @@ fun NutritionPage(navController: NavController, foodName: String, ingredients: L
                     BottomNavigationItem(
                         selected = navController.currentDestination?.route == "shoppingList",
                         onClick = { navController.navigate("shoppingList") },
-                        icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
+                        icon = {
+                            Icon(
+                                Icons.Default.LocalPizza,
+                                contentDescription = "Diet Planner"
+                            )
+                        },
                         label = { Text("Diet Planner") }
                     )
                     BottomNavigationItem(
@@ -496,7 +971,12 @@ fun NutritionPage(navController: NavController, foodName: String, ingredients: L
 
 
 @Composable
-fun NutritionPieChart(nutritionValues: Map<String, Float>, ingredients: List<String>, paint:Paint, nutrientColors: Map<String, Color>) {
+fun NutritionPieChart(
+    nutritionValues: Map<String, Float>,
+    ingredients: List<String>,
+    paint: Paint,
+    nutrientColors: Map<String, Color>
+) {
     val totalValue = nutritionValues.values.sum()
     Canvas(
         modifier = Modifier
@@ -506,6 +986,8 @@ fun NutritionPieChart(nutritionValues: Map<String, Float>, ingredients: List<Str
     ) {
             var startAngle = 0f
             nutritionValues.forEach { (label, value) ->
+        var startAngle = 0f
+        nutritionValues.forEach { (label, value) ->
             val sweepAngle = (value / totalValue) * 360
             val ingredientIndex = ingredients.indexOf(label)
             val ingredientName = if (ingredientIndex != -1) ingredients[ingredientIndex] else ""
@@ -518,7 +1000,7 @@ fun NutritionPieChart(nutritionValues: Map<String, Float>, ingredients: List<Str
                 size = Size(size.width / 2, size.height / 2),
                 style = Stroke(width = 40f)
             )
-                if (ingredientName.isNotBlank()) {
+            if (ingredientName.isNotBlank()) {
                 val angle = Math.toRadians(startAngle.toDouble() + sweepAngle.toDouble() / 2)
                 val textX = center.x + size.width / 4 * cos(angle).toFloat() - 20.dp.toPx()
                 val textY = center.y + size.height / 4 * sin(angle).toFloat()
@@ -560,7 +1042,7 @@ fun PreviewNutritionPage() {
     val foodName = "Sample Food"
     val ingredients = listOf("Ingredient 1", "Ingredient 2", "Ingredient 3")
     val navController = rememberNavController()
-    NutritionPage(navController,foodName, ingredients, nutritionValues)
+    NutritionPage(navController, foodName, ingredients, nutritionValues)
 }
 
 @Composable
@@ -594,6 +1076,7 @@ fun RecipeItem(recipeName: String) {
             .padding(vertical = 8.dp)
     )
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -755,13 +1238,12 @@ fun DietSelectionPage(onDietSelected: (String) -> Unit, navController: NavContro
 }
 
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun PreviewDietSelectionPage() {
     val navController = rememberNavController()
-    DietSelectionPage({},navController)
+    DietSelectionPage({}, navController)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -795,7 +1277,8 @@ fun MealPlanner(navController: NavController) {
                         Text(
                             text = "OK",
                             modifier = Modifier.padding(16.dp), // Add the modifier parameter
-                            style = MaterialTheme.typography.headlineSmall)
+                            style = MaterialTheme.typography.headlineSmall
+                        )
                     }
                 },
                 dismissButton = {
@@ -814,16 +1297,26 @@ fun MealPlanner(navController: NavController) {
         Button(
             onClick = { showDatePicker = true }
         ) {
-            Text(text = "Enter Date of target",
+            Text(
+                text = "Enter Date of target",
                 modifier = Modifier.padding(16.dp), // Add the modifier parameter
-                style = MaterialTheme.typography.headlineMedium)
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.ROOT)
         Text(
             text = "Date of target: ${formatter.format(Date(selectedDate))}"
         )
 
-        val mealPlans = listOf("Celebration or Seasonal Meal Plans", "Standard Meal Plans", "Specialized Meal Plans", "Cuisine-Based Meal Plans", "Meal Plans for Specific Goals", "Customizable Meal Plans", "Celebration or Seasonal Meal Plans")
+        val mealPlans = listOf(
+            "Celebration or Seasonal Meal Plans",
+            "Standard Meal Plans",
+            "Specialized Meal Plans",
+            "Cuisine-Based Meal Plans",
+            "Meal Plans for Specific Goals",
+            "Customizable Meal Plans",
+            "Celebration or Seasonal Meal Plans"
+        )
         var isExpanded by remember { mutableStateOf(false) }
         var selectedMealPlanState by remember { mutableStateOf(mealPlans[0]) }
 
@@ -920,7 +1413,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel) {
             Text(text = "Profile", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
-                items(viewModel.profileItem) {setting ->
+                items(viewModel.profileItem) { setting ->
                     ProfileItem(setting = setting)
                     Divider()
                 }
@@ -990,7 +1483,7 @@ class ProfileViewModel : ViewModel() {
 
 @Preview(showBackground = true)
 @Composable
-fun ProfilePreview(){
+fun ProfilePreview() {
     val navController = rememberNavController()
     ProfileScreen(navController, viewModel = ProfileViewModel())
 }
