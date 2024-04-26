@@ -1,5 +1,6 @@
 package com.example.assignment_1
 
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
 import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
@@ -14,7 +15,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -27,9 +27,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Filter
 import androidx.compose.material.icons.filled.Info
@@ -38,6 +40,7 @@ import androidx.compose.material.icons.filled.Phonelink
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,7 +53,6 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -79,10 +81,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,6 +95,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.assignment_1.entity.UserData
 import com.example.assignment_1.service.rememberFirebaseAuthLauncher
 import com.example.assignment_1.ui.theme.Assignment_1Theme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -98,14 +103,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.auth
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.database
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.sin
+
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -129,6 +136,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Variable for database
+val database = Firebase.database.reference
+val tables = database.child(R.string.DATABASE.toString())
+    .child(R.string.DB_ENV.toString())
+
 @Composable
 fun AppContent() {
     val navController = rememberNavController()
@@ -138,15 +150,18 @@ fun AppContent() {
         isLoggedIn.value = auth.currentUser != null
     }
     println("Current logged in user is ${Firebase.auth.currentUser.toString()}")
-    NavHost(navController, startDestination = if (isLoggedIn.value) "home" else "authenticate") {
-        composable("authenticate") {
+    NavHost(navController, startDestination = if (isLoggedIn.value) R.string.HOME_SCREEN.toString() else R.string.LOGIN_SCREEN.toString()) {
+        composable(R.string.LOGIN_SCREEN.toString()) {
             LoginScreen(navController)
         }
-        composable("home") {
+        composable(R.string.HOME_SCREEN.toString()) {
             HomeScreen(navController)
         }
-        composable("signUp") {
+        composable(R.string.SIGNUP_SCREEN.toString()) {
             SignUpScreen(navController = navController)
+        }
+        composable(R.string.FORGOT_PASSWORD_SCREEN.toString()){
+            ForgotPasswordScreen(navController = navController)
         }
 
     }
@@ -169,53 +184,73 @@ fun ErrorPopup(message: String, onDismiss: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MessagePopup(title: String, message: String, onDismiss: () -> Unit, onConform: () -> Unit) {
+fun MessagePopup(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+    icon: ImageVector,
+) {
     AlertDialog(
-        onDismissRequest = {onDismiss()},
-        icon = Icons.Default.Info,
-        title = title,
-        text = message,
+        icon = {
+            Icon(icon, contentDescription = "Example Icon")
+        },
+        title = {
+            Text(text = dialogTitle)
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
         confirmButton = {
-                        TextButton(onClick = {onConform()}) {
-                            Text(text = "Confirm")
-                        }
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text("Confirm")
+            }
         },
         dismissButton = {
-
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
+            }
         }
-        ) {
-
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.primary)
-            .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(text = message, color = Color.White)
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick =onDismiss) {
-            Text(text = "Dismiss")
-        }
-    }
+    )
 }
+
 
 
 @Preview
 @Composable
 fun MessagePopupPreview(){
-    MessagePopup(message = "Test") {
-        
-    }
+    MessagePopup(
+        onDismissRequest = { },
+        onConfirmation = { },
+        dialogTitle = "Alert dialog example",
+        dialogText = "This is an example of an alert dialog with buttons.",
+        icon = Icons.Default.Info
+    )
 }
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var showError by remember { mutableStateOf(false) }
-    var error_message = "Oops! Something went wrong"
+    var error_message by remember { mutableStateOf("Oops! Something went wrong")}
     if (showError) {
-        ErrorPopup(message = error_message, onDismiss = { showError = false })
+        MessagePopup(
+            onDismissRequest = { showError = false },
+            onConfirmation = { showError = false},
+            dialogTitle = "Error logging in",
+            dialogText = error_message,
+            icon = Icons.Default.Error
+        )
     }
 
     var email by remember{mutableStateOf("")}
@@ -268,7 +303,7 @@ fun LoginScreen(navController: NavController) {
                 Firebase.auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful)
-                            navController.navigate("home")
+                            navController.navigate(R.string.HOME_SCREEN.toString())
                         else {
                             error_message = task.exception?.message!!
                             showError = true
@@ -285,7 +320,7 @@ fun LoginScreen(navController: NavController) {
         // Sign Up Button
         Button(
             onClick = {
-                navController.navigate("signUp")
+                navController.navigate(R.string.SIGNUP_SCREEN.toString())
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -293,15 +328,53 @@ fun LoginScreen(navController: NavController) {
         }
         GoogleSignInButton(navController)
 
+//        forgot password
+        ClickableText(
+            text = AnnotatedString("Forgot Password ?"),
+            onClick = {
+                navController.navigate(R.string.FORGOT_PASSWORD_SCREEN.toString())
+            },
+            style = TextStyle(
+                textDecoration = TextDecoration.Underline,
+                color = Color.DarkGray,
+                textAlign = TextAlign.Center
+            ),
+            modifier =  Modifier.align(alignment = Alignment.CenterHorizontally)
+                .padding(5.dp)
+        )
+
     }
 }
 @Composable
 fun ForgotPasswordScreen(navController: NavController) {
-    var email by remember{mutableStateOf("")}
+
     var showError by remember { mutableStateOf(false) }
-    var error_message = "Oops! Something went wrong"
+    var errorMessage by remember { mutableStateOf("Oops! Something went wrong")}
     if (showError) {
-        ErrorPopup(message = error_message, onDismiss = { showError = false })
+        MessagePopup(
+            onDismissRequest = { showError = false },
+            onConfirmation = { showError = false},
+            dialogTitle = "Error logging in",
+            dialogText = errorMessage,
+            icon = Icons.Default.Error
+        )
+    }
+    var showAlert by remember { mutableStateOf(false) }
+    var alertMessage by remember { mutableStateOf("")}
+    if (showAlert) {
+        MessagePopup(
+            onDismissRequest = {
+                showAlert = false
+                navController.navigate(R.string.LOGIN_SCREEN.toString())
+                               },
+            onConfirmation = {
+                showAlert = false
+                navController.navigate(R.string.LOGIN_SCREEN.toString())
+                             },
+            dialogTitle = "Hi User,",
+            dialogText = alertMessage,
+            icon = Icons.Default.Error
+        )
     }
     Column(
         modifier = Modifier
@@ -323,7 +396,7 @@ fun ForgotPasswordScreen(navController: NavController) {
             fontSize = 18.sp, // Adjust font size as needed
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
+        var email by remember{ mutableStateOf("") }
         // Username/Email TextField
         TextField(
             value = email,
@@ -339,10 +412,12 @@ fun ForgotPasswordScreen(navController: NavController) {
             onClick = {
                 Firebase.auth.sendPasswordResetEmail(email)
                     .addOnCompleteListener { task ->
-                        if (task.isSuccessful)
-                            navController.navigate("authenticate")
+                        if (task.isSuccessful) {
+                            alertMessage = "An email with password reset link has been sent to your mail id. \n Thank You "
+                            showAlert = true
+                        }
                         else {
-                            error_message = task.exception?.message!!
+                            errorMessage = task.exception?.message!!
                             showError = true
                         }
                     }
@@ -351,7 +426,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
         ) {
-            Text("Sign In")
+            Text("Reset Password")
         }
 
     }
@@ -362,6 +437,8 @@ fun ForgotPasswordScreen(navController: NavController) {
 fun SignUpScreen(navController: NavController) {
     val PASS_REGEX = "^(?=.[0-9])(?=[a-z])(?=*[A-Z]).{8,}$"
     var user by remember{mutableStateOf("")}
+    var email by remember{ mutableStateOf("") }
+    var dob by remember{ mutableStateOf(LocalDate.now()) }
     var password by remember{mutableStateOf("")}
     var confirm_password by remember{mutableStateOf("")}
     var showError by remember { mutableStateOf(false) }
@@ -438,8 +515,10 @@ fun SignUpScreen(navController: NavController) {
                 Firebase.auth.createUserWithEmailAndPassword(user, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            navController.navigate("authenticate")
-//                            FirebaseDatabase.getInstance().
+                            navController.navigate(R.string.LOGIN_SCREEN.toString())
+                            tables.child(R.string.DB_USER.toString())
+                                .child(System.currentTimeMillis().toString())
+                                .setValue(UserData(name = email))
                         }
                         else {
                             error_message = task.exception?.message!!
@@ -478,7 +557,7 @@ fun GoogleSignInButton(navController: NavController) {
     val launcher = rememberFirebaseAuthLauncher(
         onAuthComplete = { result ->
             user = result.user
-            navController.navigate("home")
+            navController.navigate(R.string.HOME_SCREEN.toString())
         },
         onAuthError = { user = null }
     )
