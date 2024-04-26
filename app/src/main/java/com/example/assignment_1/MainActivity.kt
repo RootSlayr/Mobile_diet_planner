@@ -63,6 +63,7 @@ import android.graphics.Paint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.toArgb
@@ -72,6 +73,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 
 class MainActivity : ComponentActivity() {
@@ -85,7 +89,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SettingsScreenPreview()
+                    NavigationHost()
+//                    SettingsScreenPreview()
+                    HomeScreenPreview()
                 }
             }
         }
@@ -273,36 +279,8 @@ fun HomeScreen(navController: NavController) {
             MyButton("View Diet Options", {})
             MyButton("View Meal Plans", {})
             MyButton("View Nutrition Chart", {})
+            BottomNavigationBar(navController)
 
-            Box(modifier = Modifier.fillMaxSize()) {
-            // add your column here (with align modifier)
-            Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-                BottomNavigation(
-                    modifier = Modifier.fillMaxWidth(),
-                    backgroundColor = MaterialTheme.colorScheme.surface
-                ) {
-                    BottomNavigationItem(
-                        selected = navController.currentDestination?.route == "mealList",
-                        onClick = { navController.navigate("mealList") },
-                        icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
-                        label = { Text("Meals") }
-                    )
-                    BottomNavigationItem(
-                        selected = navController.currentDestination?.route == "shoppingList",
-                        onClick = { navController.navigate("shoppingList") },
-                        icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
-                        label = { Text("Diet Planner") }
-                    )
-                    BottomNavigationItem(
-                        selected = navController.currentDestination?.route == "settings",
-                        onClick = { navController.navigate("settings") },
-                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                        label = { Text("Settings") }
-                    )
-                }
-
-            }
-        }
     }
 }
 }
@@ -526,7 +504,7 @@ fun NutritionPieChart(nutritionValues: Map<String, Float>, ingredients: List<Str
             .aspectRatio(1f)
             .border(width = 1.dp, color = Color.Black)
     ) {
-        var startAngle = 0f
+            var startAngle = 0f
             nutritionValues.forEach { (label, value) ->
             val sweepAngle = (value / totalValue) * 360
             val ingredientIndex = ingredients.indexOf(label)
@@ -789,7 +767,7 @@ fun PreviewDietSelectionPage() {
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisplayDatePicker(navController: NavController) {
+fun MealPlanner(navController: NavController) {
     val calendar = Calendar.getInstance()
     calendar.set(2024, 0, 1) // month (0) is January
     val datePickerState = rememberDatePickerState(
@@ -926,9 +904,9 @@ fun DisplayDatePicker(navController: NavController) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
-private fun PreviewDisplayDatePicker() {
+private fun MealPlannerPreview() {
     val navController = rememberNavController()
-    DisplayDatePicker(navController)
+    MealPlanner(navController)
 }
 
 @Composable
@@ -1015,4 +993,51 @@ class ProfileViewModel : ViewModel() {
 fun ProfilePreview(){
     val navController = rememberNavController()
     ProfileScreen(navController, viewModel = ProfileViewModel())
+}
+
+// Implementation of Bottom Navigation Bar
+
+sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
+    object mealList : BottomNavItem("home", Icons.Default.Search, "Meal List")
+    object shoppingList : BottomNavItem("shoppinglist", Icons.Default.LocalPizza, "Shopping List")
+    object settingsScreen : BottomNavItem("settings", Icons.Default.Settings, "Settings")
+    object homeScreen : BottomNavItem("home", Icons.Default.Home, "Home")
+    companion object {
+        fun values() = arrayOf(mealList, shoppingList, settingsScreen, homeScreen)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun NavigationHost() {
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = BottomNavItem.homeScreen.route) {
+        composable(BottomNavItem.mealList.route) { /* Home Screen UI */ HomeScreenPreview()}
+        composable(BottomNavItem.shoppingList.route) { /* Search Screen UI */ MealPlannerPreview() }
+        composable(BottomNavItem.settingsScreen.route) { /* Profile Screen UI */ SettingsScreenPreview()}
+        composable(BottomNavItem.homeScreen.route) { /* Profile Screen UI */ProfilePreview() }
+    }
+    BottomNavigationBar(navController = navController)
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
+    BottomNavigation {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
+        BottomNavItem.values().forEach { item ->
+            BottomNavigationItem(
+                selected = currentRoute == item.route,
+                onClick = {
+                    navController.navigate(item.route) {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                },
+                icon = { Icon(item.icon, contentDescription = null) },
+                label = { Text(item.label) }
+            )
+        }
+    }
 }
