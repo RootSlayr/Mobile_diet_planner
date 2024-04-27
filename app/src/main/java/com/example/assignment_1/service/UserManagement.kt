@@ -14,11 +14,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.database
+import com.google.firebase.database.Query
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -43,11 +41,11 @@ class UserManagement {
             .setValue(data)
     }
 
-    fun findUserByEmail(email: String): UserData? {
+    fun findUserByEmail(email: String): Query {
         return tables.child(DB_USER)
             .orderByChild("email")
             .equalTo(email)
-            .get().result.getValue(UserData::class.java)
+//            .get().result.getValue(UserData::class.java)
     }
 
 }

@@ -3,14 +3,13 @@ package com.example.assignment_1
 
 import android.app.DatePickerDialog
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -110,11 +109,12 @@ import com.example.assignment_1.service.rememberFirebaseAuthLauncher
 import com.example.assignment_1.ui.theme.Assignment_1Theme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.gson.Gson
 import java.text.DateFormatSymbols
@@ -161,23 +161,21 @@ val database = Firebase.database.reference
 val tables = database.child(DATABASE)
     .child(DB_ENV)
 
-// Initiating Shared Preferences
-var prefs: SharedPreferences = TODO()
-
-fun savePref(key: String, value: Any) {
+fun savePref(key: String, value: Any, context: Context) {
+    val prefs = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     val editor = prefs.edit()
     editor.putString(key, Gson().toJson(value))
     editor.apply()
 }
 
-fun getPref(key: String, type: Class<Any>) {
+fun getPref(key: String, type: Class<Any>, context: Context) {
+    val prefs = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     Gson().fromJson(prefs.getString(key, "{}"), type)
 }
 
 
 @Composable
 fun AppContent() {
-    prefs = LocalContext.current.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     val navController = rememberNavController()
     val isLoggedIn = remember { mutableStateOf(false) }
 
@@ -261,6 +259,7 @@ fun MessagePopupPreview(){
 
 @Composable
 fun LoginScreen(navController: NavController) {
+    val context = LocalContext.current
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("Oops! Something went wrong") }
     if (showError) {
@@ -323,8 +322,32 @@ fun LoginScreen(navController: NavController) {
                 Firebase.auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            savePref(DB_USER, UserManagement.instance.findUserByEmail(email)!!)
-                            navController.navigate(HOME_SCREEN)
+                            UserManagement.instance.findUserByEmail(email)
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            for (users in dataSnapshot.children) {
+                                                val data =
+                                                    users.getValue(UserData::class.java)
+                                                savePref(DB_USER, data!!, context)
+                                                navController.navigate(HOME_SCREEN)
+                                                break
+                                            }
+                                        } else {
+                                            task.result.user!!.delete()
+                                            Firebase.auth.signOut()
+                                            navController.navigate(SIGNUP_SCREEN)
+                                        }
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        Log.e("DataBase Error", error.message)
+                                        errorMessage = "Error Fetching user Data"
+                                        showError = true
+                                    }
+
+                                })
+
                         } else {
                             errorMessage = task.exception?.message!!
                             showError = true
@@ -456,6 +479,7 @@ fun ForgotPasswordScreen(navController: NavController) {
 
 @Composable
 fun SignUpScreen(navController: NavController) {
+    val context = LocalContext.current
     val passRegex = "^" +
             "(?=.*[0-9])" +         // should Contain number
             "(?=.*[a-z])" +           // should contain lowercase alphabet
@@ -586,10 +610,10 @@ fun SignUpScreen(navController: NavController) {
                                     email = email,
                                     gender = gender,
                                     dob = Date(dob),
-                                    id = UUID.randomUUID()
+                                    id = UUID.randomUUID().toString()
                                 )
                                 UserManagement.instance.createUser(userData)
-                                savePref(DB_USER, userData)
+                                savePref(DB_USER, userData, context)
                                 navController.navigate(LOGIN_SCREEN)
                             } else {
                                 errorMessage = task.exception?.message!!
@@ -629,21 +653,31 @@ fun GoogleSignInButton(navController: NavController) {
     val launcher = rememberFirebaseAuthLauncher(
         onAuthComplete = { result ->
             user = result.user
-            val userData = UserManagement.instance.findUserByEmail(user?.email!!)
-            if (userData == null) {
-                user!!.delete()
-                    .addOnCompleteListener(OnCompleteListener {
-                        @Override
-                        fun onComplete(@NonNull task: Task<Void>) {
+            UserManagement.instance.findUserByEmail(user!!.email!!)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (users in dataSnapshot.children) {
+                                val data =
+                                    users.getValue(UserData::class.java)
+                                savePref(DB_USER, data!!, context)
+                                navController.navigate(HOME_SCREEN)
+                                break
+                            }
+                        } else {
+                            user!!.delete()
                             Firebase.auth.signOut()
                             navController.navigate(SIGNUP_SCREEN)
                         }
-                    })
-            }
-            if (userData != null) {
-                savePref(DB_USER, userData)
-            }
-            navController.navigate(HOME_SCREEN)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("DataBase Error", error.message)
+                        Firebase.auth.signOut()
+                        navController.navigate(SIGNUP_SCREEN)
+                    }
+                })
+
         },
         onAuthError = { user = null }
     )
