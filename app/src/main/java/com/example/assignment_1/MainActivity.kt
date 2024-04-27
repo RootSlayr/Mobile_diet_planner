@@ -1,17 +1,23 @@
 package com.example.assignment_1
 
-//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
+
+import android.app.DatePickerDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
+import android.widget.DatePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,6 +67,8 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -96,22 +104,45 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.assignment_1.entity.UserData
+import com.example.assignment_1.enum.Gender
+import com.example.assignment_1.service.UserManagement
 import com.example.assignment_1.service.rememberFirebaseAuthLauncher
 import com.example.assignment_1.ui.theme.Assignment_1Theme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.auth
 import com.google.firebase.database.database
+import com.google.gson.Gson
+import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.LocalDate
+import java.util.Arrays
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
+import java.util.regex.Pattern
+import java.util.stream.Collectors
 import kotlin.math.cos
 import kotlin.math.sin
+
+//NavController Variables
+const val LOGIN_SCREEN = "login"
+const val SIGNUP_SCREEN = "signup"
+const val HOME_SCREEN = "home"
+const val SETTINGS_SCREEN = "settings"
+const val MEAL_PLANNER_SCREEN = "planner"
+const val USER_PROFILE_SCREEN = "userProfile"
+const val FORGOT_PASSWORD_SCREEN = "FORGOT_PASSWORD"
+
+//Database Constants
+const val DATABASE = "MealMate"
+const val DB_ENV = "DEV"
+const val DB_USER = "User"
 
 
 class MainActivity : ComponentActivity() {
@@ -120,29 +151,33 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         setContent {
-//            Assignment_1Theme {
-            // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    SettingsScreenPreview()
-//                }
-//            }
             AppContent()
         }
-
-
     }
 }
 
 // Variable for database
 val database = Firebase.database.reference
-val tables = database.child(R.string.DATABASE.toString())
-    .child(R.string.DB_ENV.toString())
+val tables = database.child(DATABASE)
+    .child(DB_ENV)
+
+// Initiating Shared Preferences
+var prefs: SharedPreferences = TODO()
+
+fun savePref(key: String, value: Any) {
+    val editor = prefs.edit()
+    editor.putString(key, Gson().toJson(value))
+    editor.apply()
+}
+
+fun getPref(key: String, type: Class<Any>) {
+    Gson().fromJson(prefs.getString(key, "{}"), type)
+}
+
 
 @Composable
 fun AppContent() {
+    prefs = LocalContext.current.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     val navController = rememberNavController()
     val isLoggedIn = remember { mutableStateOf(false) }
 
@@ -150,39 +185,24 @@ fun AppContent() {
         isLoggedIn.value = auth.currentUser != null
     }
     println("Current logged in user is ${Firebase.auth.currentUser.toString()}")
-    NavHost(navController, startDestination = if (isLoggedIn.value) R.string.HOME_SCREEN.toString() else R.string.LOGIN_SCREEN.toString()) {
-        composable(R.string.LOGIN_SCREEN.toString()) {
+    NavHost(navController, startDestination = if (isLoggedIn.value) HOME_SCREEN else LOGIN_SCREEN) {
+        composable(LOGIN_SCREEN) {
             LoginScreen(navController)
         }
-        composable(R.string.HOME_SCREEN.toString()) {
+        composable(HOME_SCREEN) {
             HomeScreen(navController)
         }
-        composable(R.string.SIGNUP_SCREEN.toString()) {
+        composable(SIGNUP_SCREEN) {
             SignUpScreen(navController = navController)
         }
-        composable(R.string.FORGOT_PASSWORD_SCREEN.toString()){
+        composable(FORGOT_PASSWORD_SCREEN) {
             ForgotPasswordScreen(navController = navController)
         }
 
     }
 }
 
-@Composable
-fun ErrorPopup(message: String, onDismiss: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.error)
-            .padding(16.dp)
-    ) {
-        Text(text = message, color = Color.White)
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick =onDismiss) {
-            Text(text = "Dismiss")
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessagePopup(
     onDismissRequest: () -> Unit,
@@ -242,13 +262,13 @@ fun MessagePopupPreview(){
 @Composable
 fun LoginScreen(navController: NavController) {
     var showError by remember { mutableStateOf(false) }
-    var error_message by remember { mutableStateOf("Oops! Something went wrong")}
+    var errorMessage by remember { mutableStateOf("Oops! Something went wrong") }
     if (showError) {
         MessagePopup(
             onDismissRequest = { showError = false },
-            onConfirmation = { showError = false},
+            onConfirmation = { showError = false },
             dialogTitle = "Error logging in",
-            dialogText = error_message,
+            dialogText = errorMessage,
             icon = Icons.Default.Error
         )
     }
@@ -302,10 +322,11 @@ fun LoginScreen(navController: NavController) {
             onClick = {
                 Firebase.auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
-                        if (task.isSuccessful)
-                            navController.navigate(R.string.HOME_SCREEN.toString())
-                        else {
-                            error_message = task.exception?.message!!
+                        if (task.isSuccessful) {
+                            savePref(DB_USER, UserManagement.instance.findUserByEmail(email)!!)
+                            navController.navigate(HOME_SCREEN)
+                        } else {
+                            errorMessage = task.exception?.message!!
                             showError = true
                         }
                     }
@@ -320,7 +341,7 @@ fun LoginScreen(navController: NavController) {
         // Sign Up Button
         Button(
             onClick = {
-                navController.navigate(R.string.SIGNUP_SCREEN.toString())
+                navController.navigate(SIGNUP_SCREEN)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -332,14 +353,15 @@ fun LoginScreen(navController: NavController) {
         ClickableText(
             text = AnnotatedString("Forgot Password ?"),
             onClick = {
-                navController.navigate(R.string.FORGOT_PASSWORD_SCREEN.toString())
+                navController.navigate(FORGOT_PASSWORD_SCREEN)
             },
             style = TextStyle(
                 textDecoration = TextDecoration.Underline,
                 color = Color.DarkGray,
                 textAlign = TextAlign.Center
             ),
-            modifier =  Modifier.align(alignment = Alignment.CenterHorizontally)
+            modifier = Modifier
+                .align(alignment = Alignment.CenterHorizontally)
                 .padding(5.dp)
         )
 
@@ -365,12 +387,12 @@ fun ForgotPasswordScreen(navController: NavController) {
         MessagePopup(
             onDismissRequest = {
                 showAlert = false
-                navController.navigate(R.string.LOGIN_SCREEN.toString())
-                               },
+                navController.navigate(LOGIN_SCREEN)
+            },
             onConfirmation = {
                 showAlert = false
-                navController.navigate(R.string.LOGIN_SCREEN.toString())
-                             },
+                navController.navigate(LOGIN_SCREEN)
+            },
             dialogTitle = "Hi User,",
             dialogText = alertMessage,
             icon = Icons.Default.Error
@@ -432,19 +454,32 @@ fun ForgotPasswordScreen(navController: NavController) {
     }
 }
 
-
 @Composable
 fun SignUpScreen(navController: NavController) {
-    val PASS_REGEX = "^(?=.[0-9])(?=[a-z])(?=*[A-Z]).{8,}$"
-    var user by remember{mutableStateOf("")}
-    var email by remember{ mutableStateOf("") }
-    var dob by remember{ mutableStateOf(LocalDate.now()) }
-    var password by remember{mutableStateOf("")}
-    var confirm_password by remember{mutableStateOf("")}
+    val passRegex = "^" +
+            "(?=.*[0-9])" +         // should Contain number
+            "(?=.*[a-z])" +           // should contain lowercase alphabet
+            "(?=.*[A-Z])" +             // should contain uppercase alphabet
+            "(?=.*[@#$%^&+=!])" +     // at least 1 special character
+            "(?=\\S+$)" +            // no white spaces
+            ".{6,20}" +                // at least 6 characters
+            "$"
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var dob by rememberSaveable { mutableLongStateOf(Date().time) }
+    var gender by remember { mutableStateOf(Gender.NONE) }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
-    var error_message = "Oops! Something went wrong"
+    var errorMessage by remember { mutableStateOf("Oops! Something went wrong") }
     if (showError) {
-        ErrorPopup(message = error_message, onDismiss = { showError = false })
+        MessagePopup(
+            onDismissRequest = { showError = false },
+            onConfirmation = { showError = false },
+            dialogTitle = "Error logging in",
+            dialogText = errorMessage,
+            icon = Icons.Default.Error
+        )
     }
     Column(
         modifier = Modifier
@@ -467,20 +502,41 @@ fun SignUpScreen(navController: NavController) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Username/Email TextField
+        // Username TextField
         TextField(
-            value = user, // You need to bind this to a state variable
-            onValueChange = { user = it },
+            value = name, // You need to bind this to a state variable
+            onValueChange = { name = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
-            label = { Text("Username/Email") }
+            label = { Text("Name") }
+        )
+
+        //Email TextField
+        TextField(
+            value = email, // You need to bind this to a state variable
+            onValueChange = { email = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text("Email") }
+        )
+        //Date of Birth Field
+        DatePickerField(select = { dob = it }, name = "Date of Birth")
+
+        //Gender Input
+        RecurrenceDropdownMenu(
+            recurrence = { gender = Gender.valueOf(it) },
+            options = Arrays.stream(Gender.entries.toTypedArray()).map(Gender::name).collect(
+                Collectors.toList()
+            ),
+            name = "Select Gender"
         )
 
         // Password TextField
         TextField(
             value = password, // You need to bind this to a state variable
-            onValueChange = {password = it },
+            onValueChange = { password = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -490,8 +546,8 @@ fun SignUpScreen(navController: NavController) {
 
         // Password TextField
         TextField(
-            value = confirm_password, // You need to bind this to a state variable
-            onValueChange = { confirm_password = it },
+            value = confirmPassword, // You need to bind this to a state variable
+            onValueChange = { confirmPassword = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -502,30 +558,46 @@ fun SignUpScreen(navController: NavController) {
         // Sign In Button
         Button(
             onClick = {
-                if (password.length < 6) {
-                    error_message = "Password cannot less than 6 characters."
-                    showError = true
-                } else if (password.matches(Regex.fromLiteral(PASS_REGEX))) {
-                    error_message =
-                        "Password must contain at least 1 number, 1 upperCase and 1 LowerCase."
-                    showError = true
-                } else if (password.equals(confirm_password)) {
-                    error_message = "Password confirmation should matches current user."
+                val pattern = Pattern.compile(passRegex)
+                val matcher = pattern.matcher(password)
+                if (name.isEmpty() || email.isEmpty()) {
+                    errorMessage = "Name and Email cannot be empty."
                 }
-                Firebase.auth.createUserWithEmailAndPassword(user, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            navController.navigate(R.string.LOGIN_SCREEN.toString())
-                            tables.child(R.string.DB_USER.toString())
-                                .child(System.currentTimeMillis().toString())
-                                .setValue(UserData(name = email))
-                        }
-                        else {
-                            error_message = task.exception?.message!!
-                            showError = true
-                        }
+                if (password.length < 6) {
+                    errorMessage = "Password cannot less than 6 characters."
+                    showError = true
+                } else if (!matcher.matches()) {
+                    errorMessage =
+                        "Password must contain at least 1 number, 1 upperCase and 1 LowerCase, 1 special character."
+                    showError = true
+                } else if (password != confirmPassword) {
+                    errorMessage = "Password confirmation should matches current user."
+                    showError = true
+                } else if (Date(dob) == Date()) {
+                    errorMessage = "Invalid Date of Birth"
+                    showError = true
+                }
+                if (!showError) {
+                    Firebase.auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val userData = UserData(
+                                    name = name,
+                                    email = email,
+                                    gender = gender,
+                                    dob = Date(dob),
+                                    id = UUID.randomUUID()
+                                )
+                                UserManagement.instance.createUser(userData)
+                                savePref(DB_USER, userData)
+                                navController.navigate(LOGIN_SCREEN)
+                            } else {
+                                errorMessage = task.exception?.message!!
+                                showError = true
+                            }
 
-                    }
+                        }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -557,7 +629,21 @@ fun GoogleSignInButton(navController: NavController) {
     val launcher = rememberFirebaseAuthLauncher(
         onAuthComplete = { result ->
             user = result.user
-            navController.navigate(R.string.HOME_SCREEN.toString())
+            val userData = UserManagement.instance.findUserByEmail(user?.email!!)
+            if (userData == null) {
+                user!!.delete()
+                    .addOnCompleteListener(OnCompleteListener {
+                        @Override
+                        fun onComplete(@NonNull task: Task<Void>) {
+                            Firebase.auth.signOut()
+                            navController.navigate(SIGNUP_SCREEN)
+                        }
+                    })
+            }
+            if (userData != null) {
+                savePref(DB_USER, userData)
+            }
+            navController.navigate(HOME_SCREEN)
         },
         onAuthError = { user = null }
     )
@@ -565,12 +651,12 @@ fun GoogleSignInButton(navController: NavController) {
     Button(
         onClick = {
 
-            val signIn_options =
+            val signInOptions =
                 GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(token)
                     .requestEmail()
                     .build()
-            val googleSignInClient = GoogleSignIn.getClient(context, signIn_options)
+            val googleSignInClient = GoogleSignIn.getClient(context, signInOptions)
             launcher.launch(googleSignInClient.signInIntent)
 
         },
@@ -1231,7 +1317,7 @@ fun DisplayDatePicker(navController: NavController) {
         initialSelectedDateMillis = Instant.now().toEpochMilli()
     )
     var showDatePicker by remember { mutableStateOf(false) }
-    var selectedDate by rememberSaveable { mutableStateOf(calendar.timeInMillis) }
+    var selectedDate by rememberSaveable { mutableLongStateOf(calendar.timeInMillis) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Meal Planner", fontSize = 30.sp, style = MaterialTheme.typography.bodyMedium)
@@ -1463,4 +1549,85 @@ fun ProfilePreview() {
     ProfileScreen(navController, viewModel = ProfileViewModel())
 }
 
-// TobBar Component
+// TopBar Component
+@Composable
+fun DatePickerField(select: (Long) -> Unit, name: String) {
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
+
+    val currentDate = Date().toFormattedString()
+    var selectDate by rememberSaveable { mutableStateOf(currentDate) }
+
+    val context = LocalContext.current
+
+    val calendar = Calendar.getInstance()
+    var yearBase by remember { mutableIntStateOf(calendar.get(Calendar.YEAR)) }
+    var monthBase by remember { mutableIntStateOf(calendar.get(Calendar.MONTH)) }
+    var dayBase by remember { mutableIntStateOf(calendar.get(Calendar.DAY_OF_MONTH)) }
+    calendar.time = Date()
+
+    val datePickerDialog =
+        DatePickerDialog(context, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+            yearBase = year
+            monthBase = month
+            dayBase = dayOfMonth
+            val newDate = Calendar.getInstance()
+            newDate.set(year, month, dayOfMonth)
+            selectDate = "${month.toMonthName()} $dayOfMonth, $year"
+            select(newDate.timeInMillis)
+        }, yearBase, monthBase, dayBase)
+
+    TextField(
+        value = selectDate,
+        onValueChange = { },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        label = { Text(name) },
+        interactionSource = interactionSource
+    )
+    if (isPressed) datePickerDialog.show()
+
+}
+
+fun Int.toMonthName(): String {
+    return DateFormatSymbols().months[this]
+}
+
+fun Date.toFormattedString(): String {
+    val simpleDateFormat = SimpleDateFormat("LLLL dd, yyyy", Locale.getDefault())
+    return simpleDateFormat.format(this)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecurrenceDropdownMenu(recurrence: (String) -> Unit, options: List<String>, name: String) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOption by remember { mutableStateOf("Select Gender") }
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+        TextField(
+            value = selectedOption,
+            onValueChange = { },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text(name) },
+            readOnly = true,
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
+        )
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { selection ->
+                DropdownMenuItem(text = { Text(selection) }, onClick = {
+                    selectedOption = selection
+                    recurrence(selection)
+                    expanded = false
+                })
+            }
+        }
+    }
+}

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.googleServices)
 }
 
 android {
@@ -65,12 +66,28 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.6.4")
     implementation("androidx.compose.material:material:1.6.4")
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation ("androidx.compose.material:material-icons-core:1.6.4")
+    implementation("androidx.compose.material:material-icons-core:1.6.4")
     // For using extended Google Material Icons
-    implementation ("androidx.compose.material:material-icons-extended:1.6.4")
+    implementation("androidx.compose.material:material-icons-extended:1.6.4")
+
+
+    // Added dependencies for Firebase Authentication
+    implementation(libs.firebase.auth)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.common)
+    implementation(libs.google.services)
+    implementation(libs.shared.prefernces)
+    implementation(libs.gson)
+
+    // Added dependencies for Firebase Authentication
+    implementation(libs.firebase.auth)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.common)
+    implementation(libs.google.services)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.perf.ktx)
+    implementation(libs.play.services.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

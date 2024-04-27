@@ -12,6 +12,12 @@ material3Android = "1.2.1"
 navigationRuntimeKtx = "2.7.7"
 navigationCompose = "2.7.7"
 firebasePerfKtx = "20.5.2"
+firebase-bom= "32.8.0"
+firebase-common="20.4.3"
+google-services="4.4.1"
+playServicesAuth = "21.0.0"
+sharedPreferences = "1.1.0"
+gson = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,7 +39,17 @@ androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navig
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 firebase-perf-ktx = { group = "com.google.firebase", name = "firebase-perf-ktx", version.ref = "firebasePerfKtx" }
 
+## Added dependencies for Firebase Authentication
+firebase-auth = {group = "com.google.firebase", name="firebase-auth"}
+firebase-bom = {group = "com.google.firebase", name="firebase-bom", version.ref="firebase-bom"}
+firebase-common = {group = "com.google.firebase", name="firebase-common", version.ref="firebase-common"}
+google-services = {group= "com.google.gms", name="google-services", version.ref="google-services"}
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+
+shared-prefernces = {group = "androidx.datastore", name = "datastore-preferences", version.ref="sharedPreferences"}
+gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+googleServices = {id="com.google.gms.google-services", version.ref="google-services"}
 
