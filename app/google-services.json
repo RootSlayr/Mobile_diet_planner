@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "390520198308",
+    "project_id": "flaash-ee724",
+    "storage_bucket": "flaash-ee724.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:390520198308:android:80f6bdda6ede88e85e4231",
+        "android_client_info": {
+          "package_name": "com.example.assignment_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "390520198308-lg6b1erb7umqrutl6ki35l9labm79cdr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBiPkjCyPLE0MXkasHqkU6AEU2iFk_YSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "390520198308-lg6b1erb7umqrutl6ki35l9labm79cdr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
