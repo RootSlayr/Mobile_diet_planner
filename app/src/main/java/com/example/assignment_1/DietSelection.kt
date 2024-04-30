@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -51,7 +54,8 @@ import androidx.compose.ui.unit.sp
 
 data class RecipeResponse(val hits: List<Hit>)
 data class Hit(val recipe: Recipe)
-data class Recipe(val label: String)
+//data class Recipe(val label: String)
+data class Recipe(val label: String, val ingredientLines: List<String>)
 
 interface EdamamApi {
     @GET("api/recipes/v2")
@@ -77,7 +81,7 @@ fun RecipeItem(recipeName: String) {
 }
 
 class RecipeViewModel : ViewModel() {
-    var recipes = mutableStateOf<List<String>>(listOf())
+    var recipes = mutableStateOf<List<Recipe>>(listOf())
 
     private val api: EdamamApi by lazy {
         Retrofit.Builder()
@@ -96,7 +100,12 @@ class RecipeViewModel : ViewModel() {
         ).enqueue(object : Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 if (response.isSuccessful) {
-                    recipes.value = response.body()?.hits?.map { it.recipe.label } ?: listOf()
+                    recipes.value = (response.body()?.hits?.map { hit ->
+                        Recipe(
+                            label = hit.recipe.label,
+                            ingredientLines = hit.recipe.ingredientLines
+                        )
+                    } ?: listOf())
                 } else {
                     recipes.value = listOf()
                 }
@@ -122,10 +131,10 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             val recipes by viewModel.recipes
+            var selectedRecipe by remember { mutableStateOf("") }
+            var expandedRecipe by remember { mutableStateOf<String?>(null) }
 
-            var selectedRecepie = ""
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -191,15 +200,12 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             }
                         }
                     }
-                    selectedRecepie = selectedMealPlanState
+                    selectedRecipe = selectedMealPlanState
+
 //            Text(selectedRecepie)
                     Spacer(modifier = Modifier.height(16.dp))
-                    when (selectedRecepie) {
+                    when (selectedRecipe) {
                         "Vegan" -> {
-//                    LazyColumn {
-//                        items(veganRecipes) { recipe ->
-//                            RecipeItem(recipeName = recipe)
-//                        }
                             viewModel.fetchRecipes("Vegan")
 
                             LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
@@ -208,16 +214,41 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             ){
 
                                 items(recipes) { recipe ->
+                                    val isExpanded = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .clickable {
+                                                isExpanded.value = !isExpanded.value
+                                            }
+                                            .height(boxHeight)
                                     ){
-                                        Text(
-                                            text = recipe,
-                                            modifier = Modifier.padding(8.dp),
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                        )
+                                        Column {
+                                            Text(
+                                                text = recipe.label,
+                                                modifier = Modifier.padding(8.dp),
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                            )
+                                            if (isExpanded.value) {
+                                                recipe.ingredientLines.forEach { ingredient ->
+                                                    Text(
+                                                        text = "- $ingredient",
+                                                        modifier = Modifier.padding(
+                                                            start = 16.dp,
+                                                            top = 4.dp
+                                                        ),
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                             }
@@ -230,17 +261,43 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
+
                                 items(recipes) { recipe ->
+                                    val isExpanded = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .clickable {
+                                                isExpanded.value = !isExpanded.value
+                                            }
+                                            .height(boxHeight)
                                     ){
-                                        Text(
-                                            text = recipe,
-                                            modifier = Modifier.padding(8.dp),
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                        )
+                                        Column {
+                                            Text(
+                                                text = recipe.label,
+                                                modifier = Modifier.padding(8.dp),
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                            )
+                                            if (isExpanded.value) {
+                                                recipe.ingredientLines.forEach { ingredient ->
+                                                    Text(
+                                                        text = "- $ingredient",
+                                                        modifier = Modifier.padding(
+                                                            start = 16.dp,
+                                                            top = 4.dp
+                                                        ),
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                             }
@@ -252,38 +309,92 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
+
                                 items(recipes) { recipe ->
+                                    val isExpanded = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .clickable {
+                                                isExpanded.value = !isExpanded.value
+                                            }
+                                            .height(boxHeight)
                                     ){
-                                        Text(
-                                            text = recipe,
-                                            modifier = Modifier.padding(8.dp),
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                        )
+                                        Column {
+                                            Text(
+                                                text = recipe.label,
+                                                modifier = Modifier.padding(8.dp),
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                            )
+                                            if (isExpanded.value) {
+                                                recipe.ingredientLines.forEach { ingredient ->
+                                                    Text(
+                                                        text = "- $ingredient",
+                                                        modifier = Modifier.padding(
+                                                            start = 16.dp,
+                                                            top = 4.dp
+                                                        ),
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                             }
                         }
 
                         "Gluten Free" -> {
+                            viewModel.fetchRecipes("Gluten-free")
                             LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
+
                                 items(recipes) { recipe ->
+                                    val isExpanded = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .clickable {
+                                                isExpanded.value = !isExpanded.value
+                                            }
+                                            .height(boxHeight)
                                     ){
-                                        Text(
-                                            text = recipe,
-                                            modifier = Modifier.padding(8.dp),
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                        )
+                                        Column {
+                                            Text(
+                                                text = recipe.label,
+                                                modifier = Modifier.padding(8.dp),
+
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                            )
+                                            if (isExpanded.value) {
+                                                recipe.ingredientLines.forEach { ingredient ->
+                                                    Text(
+                                                        text = "- $ingredient",
+                                                        modifier = Modifier.padding(
+                                                            start = 16.dp,
+                                                            top = 4.dp
+                                                        ),
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                             }
