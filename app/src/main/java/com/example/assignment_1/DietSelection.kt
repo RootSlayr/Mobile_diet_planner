@@ -3,9 +3,11 @@ package com.example.assignment_1
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,6 +46,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import java.util.Locale
 import androidx.compose.material3.Surface
+import androidx.compose.ui.unit.sp
 
 
 data class RecipeResponse(val hits: List<Hit>)
@@ -199,9 +202,23 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
 //                        }
                             viewModel.fetchRecipes("Vegan")
 
-                            LazyColumn {
+                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ){
+
                                 items(recipes) { recipe ->
-                                    RecipeItem(recipeName = recipe)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                    ){
+                                        Text(
+                                            text = recipe,
+                                            modifier = Modifier.padding(8.dp),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                        )
+                                    }
                                 }
                             }
 
@@ -209,26 +226,65 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
 
                         "Keto" -> {
                             viewModel.fetchRecipes("Keto-Friendly")
-                            LazyColumn {
+                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 items(recipes) { recipe ->
-                                    RecipeItem(recipeName = recipe)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                    ){
+                                        Text(
+                                            text = recipe,
+                                            modifier = Modifier.padding(8.dp),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                        )
+                                    }
                                 }
                             }
                         }
 
                         "Vegetarian" -> {
                             viewModel.fetchRecipes("Vegetarian")
-                            LazyColumn {
+                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 items(recipes) { recipe ->
-                                    RecipeItem(recipeName = recipe)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                    ){
+                                        Text(
+                                            text = recipe,
+                                            modifier = Modifier.padding(8.dp),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                        )
+                                    }
                                 }
                             }
                         }
 
                         "Gluten Free" -> {
-                            LazyColumn {
+                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 items(recipes) { recipe ->
-                                    RecipeItem(recipeName = recipe)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(8.dp))
+                                    ){
+                                        Text(
+                                            text = recipe,
+                                            modifier = Modifier.padding(8.dp),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
+                                        )
+                                    }
                                 }
                             }
                         }
