@@ -791,17 +791,6 @@ fun NutritionLegend(
     }
 }
 
-@Composable
-fun RecipeItem(recipeName: String) {
-    Text(
-        text = recipeName,
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    )
-}
-
 
 
 // TopBar Component
