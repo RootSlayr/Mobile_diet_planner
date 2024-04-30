@@ -1,6 +1,5 @@
 package com.example.assignment_1
 
-
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Paint
@@ -152,7 +151,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         setContent {
-            AppContent()
+//            AppContent()
+            DietSelectionPage(navController = rememberNavController())
         }
     }
 }
@@ -801,6 +801,8 @@ fun RecipeItem(recipeName: String) {
             .padding(vertical = 8.dp)
     )
 }
+
+
 
 // TopBar Component
 @Composable
