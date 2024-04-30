@@ -1,5 +1,6 @@
 package com.example.assignment_1
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,35 +35,41 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
     Surface(color = MaterialTheme.colorScheme.surface) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(text = "Settings", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(viewModel.settingsItems) { setting ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth() // Fill the width of the column
-                            .height(72.dp) // Adjust the height as needed
-                    ) {
-                        SettingsItem(setting = setting)
-                    }
-                    Divider()
-                }
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                onClick = { /* Handle save button click */ },
-                modifier = Modifier.align(Alignment.End)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Save")
+                Text(text = "Settings", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(16.dp))
+                LazyColumn {
+                    items(viewModel.settingsItems) { setting ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth() // Fill the width of the column
+                                .height(72.dp) // Adjust the height as needed
+                        ) {
+                            SettingsItem(setting = setting)
+                        }
+                        Divider()
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Button(
+                    onClick = { /* Handle save button click */ },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(text = "Save")
+                }
+
             }
+            BottomNavigationComponent(navController = navController)
+
         }
     }
-    BottomNavigationComponent(navController = navController)
 }
 
 @Composable

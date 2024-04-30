@@ -151,8 +151,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         setContent {
-//            AppContent()
-            DietSelectionPage(navController = rememberNavController())
+            AppContent()
         }
     }
 }

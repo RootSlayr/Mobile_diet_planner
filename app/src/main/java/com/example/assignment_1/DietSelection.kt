@@ -3,6 +3,7 @@ package com.example.assignment_1
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +43,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.util.Locale
+import androidx.compose.material3.Surface
 
 
 data class RecipeResponse(val hits: List<Hit>)
@@ -109,140 +111,132 @@ class RecipeViewModel : ViewModel() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= viewModel()) {
-    val recipes by viewModel.recipes
-
-/*    val veganRecipes = listOf(
-        "LENTIL BOLOGNESE",
-        "BUTTERNUT SQUASH RISOTTO",
-        "BOMBAY BURRITOS"
-    )
-    val ketoRecipes = listOf(
-        "BACON-WRAPPED AVOCADO",
-        "KETO CHICKEN ALFREDO",
-        "SPINACH AND FETA STUFFED SALMON"
-    )
-    val vegetarianRecipes = listOf(
-        "VEGETARIAN PAD THAI",
-        "DOSA WITH SAMBAR",
-        "MUSHROOM RISOTTO"
-    )
-    val highProteinRecipes = listOf(
-        "GRILLED CHICKEN BREASTS",
-        "TURKEY AND QUINOA STUFFED BELL PEPPERS",
-        "SALMON AND ASPARAGUS FOIL PACKS"
-    )*/
-    var selectedRecepie = ""
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Diet selection dropdown
-        Box(
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp))
-                .padding(vertical = 8.dp, horizontal = 16.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Select Diet for Recepies",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterStart)
-            )
-        }
 
-        val mealPlans = listOf(
-            "Vegan", "Keto", "Vegetarian", "Gluten Free"
-        )
-        var isExpanded by remember { mutableStateOf(false) }
-        var selectedMealPlanState by remember { mutableStateOf(mealPlans[0]) }
+            val recipes by viewModel.recipes
 
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Choose your Meal Plan",
-                style = MaterialTheme.typography.labelLarge
-            )
-
-            ExposedDropdownMenuBox(
-                expanded = isExpanded,
-                onExpandedChange = { isExpanded = it },
+            var selectedRecepie = ""
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                TextField(
+                // Diet selection dropdown
+                Box(
                     modifier = Modifier
-                        .menuAnchor()
                         .fillMaxWidth()
-                        .focusProperties { canFocus = false }
-                        .padding(bottom = 8.dp),
-                    readOnly = true,
-                    value = selectedMealPlanState,
-                    onValueChange = {},
-                    label = { Text("Meal Plan") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-                    }
-                )
-                ExposedDropdownMenu(
-                    expanded = isExpanded,
-                    onDismissRequest = { isExpanded = false }
+                        .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp))
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
                 ) {
-                    mealPlans.forEach { selectionOption ->
-                        DropdownMenuItem(
-                            text = { Text(selectionOption) },
-                            onClick = {
-                                selectedMealPlanState = selectionOption
-                                isExpanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                        )
-                    }
+                    Text(
+                        text = "Select Diet for Recepies",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
                 }
-            }
-            selectedRecepie = selectedMealPlanState
+
+                val mealPlans = listOf(
+                    "Vegan", "Keto", "Vegetarian", "Gluten Free"
+                )
+                var isExpanded by remember { mutableStateOf(false) }
+                var selectedMealPlanState by remember { mutableStateOf(mealPlans[0]) }
+
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Choose your Meal Plan",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = isExpanded,
+                        onExpandedChange = { isExpanded = it },
+                    ) {
+                        TextField(
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .focusProperties { canFocus = false }
+                                .padding(bottom = 8.dp),
+                            readOnly = true,
+                            value = selectedMealPlanState,
+                            onValueChange = {},
+                            label = { Text("Meal Plan") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+                            }
+                        )
+                        ExposedDropdownMenu(
+                            expanded = isExpanded,
+                            onDismissRequest = { isExpanded = false }
+                        ) {
+                            mealPlans.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(selectionOption) },
+                                    onClick = {
+                                        selectedMealPlanState = selectionOption
+                                        isExpanded = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                )
+                            }
+                        }
+                    }
+                    selectedRecepie = selectedMealPlanState
 //            Text(selectedRecepie)
-            Spacer(modifier = Modifier.height(16.dp))
-            when (selectedRecepie) {
-                "Vegan" -> {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    when (selectedRecepie) {
+                        "Vegan" -> {
 //                    LazyColumn {
 //                        items(veganRecipes) { recipe ->
 //                            RecipeItem(recipeName = recipe)
 //                        }
-                    viewModel.fetchRecipes("Vegan")
+                            viewModel.fetchRecipes("Vegan")
 
-                    LazyColumn {
-                        items(recipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
+                            LazyColumn {
+                                items(recipes) { recipe ->
+                                    RecipeItem(recipeName = recipe)
+                                }
+                            }
+
                         }
-                    }
 
-                    }
-
-                "Keto" -> {
-                    viewModel.fetchRecipes("Keto-Friendly")
-                    LazyColumn {
-                        items(recipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
+                        "Keto" -> {
+                            viewModel.fetchRecipes("Keto-Friendly")
+                            LazyColumn {
+                                items(recipes) { recipe ->
+                                    RecipeItem(recipeName = recipe)
+                                }
+                            }
                         }
+
+                        "Vegetarian" -> {
+                            viewModel.fetchRecipes("Vegetarian")
+                            LazyColumn {
+                                items(recipes) { recipe ->
+                                    RecipeItem(recipeName = recipe)
+                                }
+                            }
+                        }
+
+                        "Gluten Free" -> {
+                            LazyColumn {
+                                items(recipes) { recipe ->
+                                    RecipeItem(recipeName = recipe)
+                                }
+                            }
+                        }
+
                     }
                 }
-
-                "Vegetarian" -> {
-                    viewModel.fetchRecipes("Vegetarian")
-                    LazyColumn {
-                        items(recipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
-                        }
-                    }
-                }
-
-                "Gluten Free" -> {
-                    LazyColumn {
-                        items(recipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
-                        }
-                    }
-                }
-
             }
         }
     }
+    BottomNavigationComponent(navController = navController)
 }

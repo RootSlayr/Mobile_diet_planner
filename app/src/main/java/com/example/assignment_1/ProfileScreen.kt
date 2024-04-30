@@ -1,5 +1,6 @@
 package com.example.assignment_1
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,26 +27,36 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Profile", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn {
-                items(viewModel.profileItem) { setting ->
-                    ProfileItem(setting = setting)
-                    Divider()
+            Surface(color = MaterialTheme.colorScheme.surface) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(text = "Profile", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyColumn {
+                        items(viewModel.profileItem) { setting ->
+                            ProfileItem(setting = setting)
+                            Divider()
+                        }
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = { /* Handle save button click */ },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(text = "Save")
+                    }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                onClick = { /* Handle save button click */ },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text(text = "Save")
-            }
+            BottomNavigationComponent(navController = navController)
         }
     }
-    BottomNavigationComponent(navController = navController)
 }
 
 @Composable

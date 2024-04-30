@@ -2,6 +2,7 @@ package com.example.assignment_1
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.Phonelink
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -98,7 +100,6 @@ fun HomeScreen(navController: NavController) {
             MyButton("View Diet Options", {})
             MyButton("View Meal Plans", {})
             MyButton("View Nutrition Chart", {})
-
             BottomNavigationComponent(navController = navController)
         }
     }

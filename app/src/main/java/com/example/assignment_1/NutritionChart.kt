@@ -3,6 +3,7 @@ package com.example.assignment_1
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -35,54 +38,64 @@ fun NutritionPage(
     ingredients: List<String>,
     nutritionValues: Map<String, Float>
 ) {
-    val paint = remember {
-        Paint().apply {
-            color = Color.Black.toArgb() // Set paint color
-            textAlign = Paint.Align.CENTER // Set text alignment
-            textSize = 24f
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val paint = remember {
+                Paint().apply {
+                    color = Color.Black.toArgb() // Set paint color
+                    textAlign = Paint.Align.CENTER // Set text alignment
+                    textSize = 24f
+                }
+            }
+            val nutrientColors = remember {
+                val colorPalette = listOf(
+                    Color.Blue,
+                    Color.Green,
+                    Color.Red,
+                    Color.Yellow,
+                    Color.Magenta,
+                    Color.Cyan
+                )
+                nutritionValues.keys.zip(colorPalette).toMap()
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Nutrition Distribution",
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                NutritionPieChart(nutritionValues, ingredients, paint, nutrientColors)
+                NutritionLegend(nutritionValues, nutrientColors)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Food Name: $foodName",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Ingredients: ${ingredients.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Nutrition Values",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                NutritionTable(nutritionValues)
+                BottomNavigationComponent(navController = navController)
+            }
         }
-    }
-    val nutrientColors = remember {
-        val colorPalette = listOf(
-            Color.Blue,
-            Color.Green,
-            Color.Red,
-            Color.Yellow,
-            Color.Magenta,
-            Color.Cyan
-        )
-        nutritionValues.keys.zip(colorPalette).toMap()
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Nutrition Distribution",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        NutritionPieChart(nutritionValues, ingredients, paint, nutrientColors)
-        NutritionLegend(nutritionValues, nutrientColors)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Food Name: $foodName",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Ingredients: ${ingredients.joinToString(", ")}",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Nutrition Values",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        NutritionTable(nutritionValues)
-        BottomNavigationComponent(navController = navController)
     }
 }
 
@@ -105,7 +118,8 @@ fun NutritionPieChart(
         nutritionValues.forEach { (label, value) ->
             val sweepAngle = (value / totalValue) * 360
             val ingredientIndex = ingredients.indexOf(label)
-            val ingredientName = if (ingredientIndex != -1) ingredients[ingredientIndex] else ""
+            val ingredientName =
+                if (ingredientIndex != -1) ingredients[ingredientIndex] else ""
             drawArc(
                 color = nutrientColors[label] ?: Color.Gray,
                 startAngle = startAngle,
@@ -116,7 +130,8 @@ fun NutritionPieChart(
                 style = Stroke(width = 40f)
             )
             if (ingredientName.isNotBlank()) {
-                val angle = Math.toRadians(startAngle.toDouble() + sweepAngle.toDouble() / 2)
+                val angle =
+                    Math.toRadians(startAngle.toDouble() + sweepAngle.toDouble() / 2)
                 val textX = center.x + size.width / 4 * cos(angle).toFloat() - 20.dp.toPx()
                 val textY = center.y + size.height / 4 * sin(angle).toFloat()
                 drawIntoCanvas {
