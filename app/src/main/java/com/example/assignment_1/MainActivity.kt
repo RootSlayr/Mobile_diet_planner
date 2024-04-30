@@ -1,6 +1,5 @@
 package com.example.assignment_1
 
-
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Paint
@@ -151,7 +150,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         setContent {
-            AppContent()
+//            AppContent()
+            DietSelectionPage(navController = rememberNavController())
         }
     }
 }
@@ -1159,186 +1159,6 @@ fun NutritionLegend(
             Text(text = nutrient, modifier = Modifier.padding(start = 4.dp))
         }
     }
-}
-
-@Composable
-fun RecipeItem(recipeName: String) {
-    Text(
-        text = recipeName,
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    )
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DietSelectionPage(onDietSelected: (String) -> Unit, navController: NavController) {
-    val veganRecipes = listOf(
-        "LENTIL BOLOGNESE",
-        "BUTTERNUT SQUASH RISOTTO",
-        "BOMBAY BURRITOS"
-    )
-    val ketoRecipes = listOf(
-        "BACON-WRAPPED AVOCADO",
-        "KETO CHICKEN ALFREDO",
-        "SPINACH AND FETA STUFFED SALMON"
-    )
-    val vegetarianRecipes = listOf(
-        "VEGETARIAN PAD THAI",
-        "DOSA WITH SAMBAR",
-        "MUSHROOM RISOTTO"
-    )
-    val highProteinRecipes = listOf(
-        "GRILLED CHICKEN BREASTS",
-        "TURKEY AND QUINOA STUFFED BELL PEPPERS",
-        "SALMON AND ASPARAGUS FOIL PACKS"
-    )
-    var selectedRecepie = ""
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Diet selection dropdown
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp))
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-        ) {
-            Text(
-                text = "Select Diet for Recepies",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterStart)
-            )
-        }
-
-        val mealPlans = listOf(
-            "Vegan", "Keto", "Vegetarian", "High Protein"
-        )
-        var isExpanded by remember { mutableStateOf(false) }
-        var selectedMealPlanState by remember { mutableStateOf(mealPlans[0]) }
-
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Choose your Meal Plan",
-                style = MaterialTheme.typography.labelLarge
-            )
-
-            ExposedDropdownMenuBox(
-                expanded = isExpanded,
-                onExpandedChange = { isExpanded = it },
-            ) {
-                TextField(
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                        .focusProperties { canFocus = false }
-                        .padding(bottom = 8.dp),
-                    readOnly = true,
-                    value = selectedMealPlanState,
-                    onValueChange = {},
-                    label = { Text("Meal Plan") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-                    }
-                )
-                ExposedDropdownMenu(
-                    expanded = isExpanded,
-                    onDismissRequest = { isExpanded = false }
-                ) {
-                    mealPlans.forEach { selectionOption ->
-                        DropdownMenuItem(
-                            text = { Text(selectionOption) },
-                            onClick = {
-                                selectedMealPlanState = selectionOption
-                                isExpanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                        )
-                    }
-                }
-            }
-            selectedRecepie = selectedMealPlanState
-//            Text(selectedRecepie)
-            Spacer(modifier = Modifier.height(16.dp))
-            when (selectedRecepie) {
-                "Vegan" -> {
-                    LazyColumn {
-                        items(veganRecipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
-                        }
-                    }
-                }
-
-                "Keto" -> {
-                    LazyColumn {
-                        items(ketoRecipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
-                        }
-                    }
-                }
-
-                "Vegetarian" -> {
-                    LazyColumn {
-                        items(vegetarianRecipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
-                        }
-                    }
-                }
-
-                "High Protein" -> {
-                    LazyColumn {
-                        items(highProteinRecipes) { recipe ->
-                            RecipeItem(recipeName = recipe)
-                        }
-                    }
-                }
-
-            }
-        }
-    }
-    Box(modifier = Modifier.fillMaxSize()) {
-        // add your column here (with align modifier)
-        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-            BottomNavigation(
-                modifier = Modifier.fillMaxWidth(),
-                backgroundColor = MaterialTheme.colorScheme.surface
-            ) {
-                BottomNavigationItem(
-                    selected = navController.currentDestination?.route == "mealList",
-                    onClick = { navController.navigate("mealList") },
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Meals") },
-                    label = { Text("Meals") }
-                )
-                BottomNavigationItem(
-                    selected = navController.currentDestination?.route == "shoppingList",
-                    onClick = { navController.navigate("shoppingList") },
-                    icon = { Icon(Icons.Default.LocalPizza, contentDescription = "Diet Planner") },
-                    label = { Text("Diet Planner") }
-                )
-                BottomNavigationItem(
-                    selected = navController.currentDestination?.route == "settings",
-                    onClick = { navController.navigate("settings") },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") }
-                )
-            }
-
-        }
-    }
-}
-
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun PreviewDietSelectionPage() {
-    val navController = rememberNavController()
-    DietSelectionPage({}, navController)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
