@@ -212,8 +212,8 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             ){
 
                                 items(recipes) { recipe ->
-                                    val isExpanded = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
+                                    val isExpandeddisp = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -223,7 +223,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                             .clickable {
-                                                isExpanded.value = !isExpanded.value
+                                                isExpandeddisp.value = !isExpandeddisp.value
                                             }
                                             .height(boxHeight)
                                     ){
@@ -233,7 +233,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 modifier = Modifier.padding(8.dp),
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
                                             )
-                                            if (isExpanded.value) {
+                                            if (isExpandeddisp.value) {
                                                 recipe.ingredientLines.forEach { ingredient ->
                                                     Text(
                                                         text = "- $ingredient",
@@ -261,8 +261,8 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             ) {
 
                                 items(recipes) { recipe ->
-                                    val isExpanded = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
+                                    val isExpandeddisp = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -272,7 +272,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                             .clickable {
-                                                isExpanded.value = !isExpanded.value
+                                                isExpandeddisp.value = !isExpandeddisp.value
                                             }
                                             .height(boxHeight)
                                     ){
@@ -282,7 +282,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 modifier = Modifier.padding(8.dp),
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
                                             )
-                                            if (isExpanded.value) {
+                                            if (isExpandeddisp.value) {
                                                 recipe.ingredientLines.forEach { ingredient ->
                                                     Text(
                                                         text = "- $ingredient",
@@ -309,8 +309,8 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             ) {
 
                                 items(recipes) { recipe ->
-                                    val isExpanded = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
+                                    val isExpandeddisp = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -320,7 +320,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                             .clickable {
-                                                isExpanded.value = !isExpanded.value
+                                                isExpandeddisp.value = !isExpandeddisp.value
                                             }
                                             .height(boxHeight)
                                     ){
@@ -330,7 +330,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 modifier = Modifier.padding(8.dp),
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
                                             )
-                                            if (isExpanded.value) {
+                                            if (isExpandeddisp.value) {
                                                 recipe.ingredientLines.forEach { ingredient ->
                                                     Text(
                                                         text = "- $ingredient",
@@ -357,8 +357,8 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             ) {
 
                                 items(recipes) { recipe ->
-                                    val isExpanded = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpanded.value) 200.dp else 100.dp
+                                    val isExpandeddisp = remember { mutableStateOf(false) }
+                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -368,7 +368,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                             .clickable {
-                                                isExpanded.value = !isExpanded.value
+                                                isExpandeddisp.value = !isExpandeddisp.value
                                             }
                                             .height(boxHeight)
                                     ){
@@ -379,7 +379,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
 
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
                                             )
-                                            if (isExpanded.value) {
+                                            if (isExpandeddisp.value) {
                                                 recipe.ingredientLines.forEach { ingredient ->
                                                     Text(
                                                         text = "- $ingredient",

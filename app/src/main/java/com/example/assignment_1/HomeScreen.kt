@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Filter
+import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.Phonelink
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.Timer
@@ -74,19 +75,11 @@ fun HomeScreen(navController: NavController) {
             )
             FeatureRow(
                 icon = Icons.Default.Filter,
-                text = "Dietary filters: Find meals that meet your specific needs."
+                text = "Nutrition Chart: Find meals that meet your specific needs."
             )
             FeatureRow(
-                icon = Icons.Default.RestaurantMenu,
-                text = "Leftover magic: Repurpose ingredients to avoid food waste."
-            )
-            FeatureRow(
-                icon = Icons.Default.FamilyRestroom,
-                text = "Family-friendly options: Keep everyone happy with kid-approved meals."
-            )
-            FeatureRow(
-                icon = Icons.Default.Phonelink,
-                text = "Offline access: Take your meal plan anywhere."
+                icon = Icons.Default.Handshake,
+                text = "Diet Planner: Follow a Diet Schedule with just a click."
             )
 
             // Get started section
@@ -95,10 +88,9 @@ fun HomeScreen(navController: NavController) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
-            MyButton("View Diet Options", {})
-            MyButton("View Meal Plans", {})
-            MyButton("View Nutrition Chart", {})
-            BottomNavigationComponent(navController = navController)
+            MyButton("View Diet Options", onClick = {navController.navigate(MEAL_RECIPE_SCREEN)})
+            MyButton("View Meal Plans", onClick = {navController.navigate(DIET_PLANNER)})
         }
     }
+    BottomNavigationComponent(navController = navController)
 }
