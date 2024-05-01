@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.lifecycle.ViewModel
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -47,7 +46,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import java.util.Locale
 import androidx.compose.material3.Surface
 import androidx.compose.ui.unit.sp
 
@@ -200,9 +198,9 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                             }
                         }
                     }
+
                     selectedRecipe = selectedMealPlanState
 
-//            Text(selectedRecepie)
                     Spacer(modifier = Modifier.height(16.dp))
                     when (selectedRecipe) {
                         "Vegan" -> {
