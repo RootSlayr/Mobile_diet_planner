@@ -1,6 +1,5 @@
 package com.example.assignment_1
 
-import android.icu.lang.UCharacter.VerticalOrientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -8,11 +7,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
 
 @Composable
 fun BottomNavigationComponent(navController: NavController) {
