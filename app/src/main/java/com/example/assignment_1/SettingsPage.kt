@@ -58,10 +58,9 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 }
 
             }
-            BottomNavigationComponent(navController = navController)
-
         }
     }
+    BottomNavigationComponent(navController = navController)
 }
 
 @Composable
