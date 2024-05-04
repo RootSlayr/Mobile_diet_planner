@@ -1,5 +1,6 @@
 package com.example.assignment_1
 
+import android.app.Application
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
@@ -94,6 +95,8 @@ import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
 import java.util.stream.Collectors
+import androidx.lifecycle.viewmodel.*
+import androidx.activity.viewModels
 
 
 //NavController Variables
@@ -105,6 +108,7 @@ const val MEAL_RECIPE_SCREEN = "recipe"
 const val USER_PROFILE_SCREEN = "userProfile"
 const val DIET_PLANNER = "planner"
 const val FORGOT_PASSWORD_SCREEN = "FORGOT_PASSWORD"
+const val UNDER_DEV = "under_development"
 
 //Database Constants
 const val DATABASE = "MealMate"
@@ -113,12 +117,13 @@ const val DB_USER = "User"
 
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: PersonViewModel by viewModels()
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         setContent {
-            AppContent()
+            AppContent(viewModel)
         }
     }
 }
@@ -127,6 +132,7 @@ class MainActivity : ComponentActivity() {
 val database = Firebase.database.reference
 val tables = database.child(DATABASE)
     .child(DB_ENV)
+
 
 fun savePref(key: String, value: Any, context: Context) {
     val prefs = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
@@ -143,7 +149,7 @@ fun getPref(key: String, type: Class<Any>, context: Context) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppContent() {
+fun AppContent(viewModel: PersonViewModel) {
     val navController = rememberNavController()
     val isLoggedIn = remember { mutableStateOf(false) }
 
@@ -174,11 +180,14 @@ fun AppContent() {
             DisplayDatePicker(navController = navController)
         }
         composable(USER_PROFILE_SCREEN){
-            ProfileScreen(navController = navController, ProfileViewModel())
+            MainScreen(navController=navController, viewModel)
         }
-
+        composable(UNDER_DEV){
+            UnderDevelopmentScreen()
+        }
     }
 }
+
 
 
 @Composable

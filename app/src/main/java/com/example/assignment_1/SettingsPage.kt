@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,8 +33,6 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Settings", style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -41,10 +40,18 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                     items(viewModel.settingsItems) { setting ->
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth() // Fill the width of the column
-                                .height(72.dp) // Adjust the height as needed
+                                .fillMaxWidth()
+                                .height(72.dp)
                         ) {
-                            SettingsItem(setting = setting)
+                            SettingsItem(setting = setting, onItemClick = {
+                                if (setting == "Account") {
+                                    // Navigate to the profile screen
+                                    navController.navigate(USER_PROFILE_SCREEN)
+                                } else {
+                                    // Navigate to the under development screen
+                                    navController.navigate("under_development")
+                                }
+                            })
                         }
                         Divider()
                     }
@@ -64,18 +71,24 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
 }
 
 @Composable
-fun SettingsItem(setting: String) {
-    Text(
-        text = setting,
-        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+fun SettingsItem(setting: String, onItemClick: () -> Unit) {
+    Button(
+        onClick = onItemClick,
         modifier = Modifier
             .padding(vertical = 16.dp, horizontal = 16.dp)
             .fillMaxWidth()
-    )
+    ) {
+        Text(
+            text = setting,
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
+        )
+    }
 }
+
 
 class SettingsViewModel : ViewModel() {
     val settingsItems = listOf(
+        "Account",
         "Notification",
         "Sound",
         "Dark Mode",
@@ -85,10 +98,26 @@ class SettingsViewModel : ViewModel() {
         "Privacy",
         "Security",
         "Data Usage",
-        "Account",
+        "",
         // Add more settings items as needed
     )
 }
+@Composable
+fun UnderDevelopmentScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "This feature is under development",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
