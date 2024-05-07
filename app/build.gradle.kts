@@ -112,4 +112,6 @@ dependencies {
     implementation ("androidx.work:work-runtime-ktx:2.7.1")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
+    implementation(libs.lottie)
+
 }
