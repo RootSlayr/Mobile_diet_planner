@@ -1,5 +1,6 @@
 package com.example.assignment_1
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenuItem
@@ -59,7 +62,7 @@ data class RecipePlan(
     val ingredientLines: List<String>,
     val calories: Double,
     val totalWeight: Double,
-    val nutrients: Map<String, Nutrient>
+    val totalNutrients: Map<String, Nutrient>
 )
 
 data class Nutrient(
@@ -123,31 +126,59 @@ class RecipeViewModelPlan : ViewModel() {
             recipesFetched = true
         }
     }
-
-
     fun fetchBreakfastRecipe(diet: String) {
-        api.  getRecipes(
+        api.getRecipes(
             appId = "2b40ce51",
             appKey = "11c938d04157cb74c6b4c900e2551a5e",
-            query = "",  // or any default you consider necessary
+            query = "",
             healthLabel = diet.lowercase(),
             mealType = "breakfast"
         ).enqueue(object : Callback<RecipeResponsePlan> {
             override fun onResponse(call: Call<RecipeResponsePlan>, response: Response<RecipeResponsePlan>) {
                 if (response.isSuccessful) {
-                    val recipe = response.body()?.hits?.random()?.recipe
-                    breakfastRecipe = recipe
+                    val recipeResponse = response.body()
+                    if (recipeResponse != null && recipeResponse.hits.isNotEmpty()) {
+                        val recipe = recipeResponse.hits.random().recipe
+                        breakfastRecipe = recipe
+                        Log.d("API_Response", "Breakfast recipe: $recipe")
+                        Log.d("API_Response", "Nutrients: ${recipe?.totalNutrients}")
+                    } else {
+                        Log.e("API_Response", "Empty or null response body")
+                    }
                 } else {
-                    breakfastRecipe = null
+                    Log.e("API_Response", "Unsuccessful response: ${response.errorBody()}")
                 }
-
             }
 
             override fun onFailure(call: Call<RecipeResponsePlan>, t: Throwable) {
-                // handle failure to execute the call
+                Log.e("API_Response", "Failed to fetch breakfast recipe: ${t.message}", t)
             }
         })
     }
+
+//    fun fetchBreakfastRecipe(diet: String) {
+//        api.  getRecipes(
+//            appId = "2b40ce51",
+//            appKey = "11c938d04157cb74c6b4c900e2551a5e",
+//            query = "",  // or any default you consider necessary
+//            healthLabel = diet.lowercase(),
+//            mealType = "breakfast"
+//        ).enqueue(object : Callback<RecipeResponsePlan> {
+//            override fun onResponse(call: Call<RecipeResponsePlan>, response: Response<RecipeResponsePlan>) {
+//                if (response.isSuccessful) {
+//                    val recipe = response.body()?.hits?.random()?.recipe
+//                    breakfastRecipe = recipe
+//                } else {
+//                    breakfastRecipe = null
+//                }
+//
+//            }
+//
+//            override fun onFailure(call: Call<RecipeResponsePlan>, t: Throwable) {
+//                // handle failure to execute the call
+//            }
+//        })
+//    }
     fun fetchLunchRecipe(diet: String) {
         api.  getRecipes(
             appId = "2b40ce51",
@@ -204,8 +235,10 @@ fun RecipeScreenPlan(navController: NavController, viewModel: RecipeViewModelPla
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
+
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             var selectedRecipe by remember { mutableStateOf("") }
@@ -326,6 +359,7 @@ fun RecipeScreenPlan(navController: NavController, viewModel: RecipeViewModelPla
 
 @Composable
 fun MealCard(navController: NavController,mealType: String, recipe: RecipePlan) {
+//    InitializeVariables(recipe.ingredientLines.joinToString(), recipe)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -342,8 +376,16 @@ fun MealCard(navController: NavController,mealType: String, recipe: RecipePlan) 
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             RecipeItemPlan(recipe.label)
-            MyButton(text = "View Ingredients", onClick = { /*TODO*/ })
-            MyButton(text = "View Nutrition Graph", onClick = { /*TODO*/ })
+            MyButton(text = "View Ingredients",
+                onClick = {
+                    InitializeVariables(recipe.ingredientLines, recipe)
+                    navController.navigate(DAILY_RECIPE)
+            })
+            MyButton(text = "View Nutrition Graph",
+                onClick = {
+                    InitializeVariables(recipe.ingredientLines, recipe)
+                    navController.navigate(NUTRITION_CHART)
+            })
         }
     }
 }

@@ -190,11 +190,11 @@ fun AppContent(viewModel: PersonViewModel) {
         composable(UNDER_DEV){
             UnderDevelopmentScreen(navController=navController)
         }
-        composable(NUTRITION_CHART){
-
-        }
         composable(DAILY_RECIPE){
-
+            DailyRecipeScreen(navController)
+        }
+        composable(NUTRITION_CHART){
+            NutritionChartScreen(navController)
         }
     }
 }
