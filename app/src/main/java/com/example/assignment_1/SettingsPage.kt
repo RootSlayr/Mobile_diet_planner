@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @Composable
 fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
@@ -47,7 +49,11 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                                 if (setting == "Account") {
                                     // Navigate to the profile screen
                                     navController.navigate(USER_PROFILE_SCREEN)
-                                } else {
+                                }else if(setting == "LogOut"){
+                                    Firebase.auth.signOut()
+                                    navController.navigate(LOGIN_SCREEN)
+                                }
+                                else {
                                     // Navigate to the under development screen
                                     navController.navigate("under_development")
                                 }
@@ -98,6 +104,7 @@ class SettingsViewModel : ViewModel() {
         "Privacy",
         "Security",
         "Data Usage",
+        "LogOut",
         "",
         // Add more settings items as needed
     )
