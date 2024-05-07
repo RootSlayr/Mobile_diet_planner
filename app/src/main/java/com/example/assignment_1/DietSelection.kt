@@ -62,7 +62,8 @@ interface EdamamApi {
         @Query("app_id") appId: String,
         @Query("app_key") appKey: String,
         @Query("q") query: String,
-        @Query("health") healthLabel: String
+        @Query("health") healthLabel: String,
+      //  @Query("mealType") mealType: String
     ): Call<RecipeResponse>
 }
 
@@ -90,7 +91,7 @@ class RecipeViewModel : ViewModel() {
     }
 
     fun fetchRecipes(diet: String) {
-        api.getRecipes(
+        api.  getRecipes(
             appId = "2b40ce51",
             appKey = "11c938d04157cb74c6b4c900e2551a5e",
             query = "",  // or any default you consider necessary
