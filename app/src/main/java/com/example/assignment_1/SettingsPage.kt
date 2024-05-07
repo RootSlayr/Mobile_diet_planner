@@ -103,7 +103,7 @@ class SettingsViewModel : ViewModel() {
     )
 }
 @Composable
-fun UnderDevelopmentScreen() {
+fun UnderDevelopmentScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -112,10 +112,11 @@ fun UnderDevelopmentScreen() {
     ) {
         Text(
             text = "This feature is under development",
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
         )
     }
+    BottomNavigationComponent(navController = navController)
 }
 
 

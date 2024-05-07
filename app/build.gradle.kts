@@ -109,5 +109,8 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.activity:activity-ktx:1.3.1")
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
+
+
 
 }

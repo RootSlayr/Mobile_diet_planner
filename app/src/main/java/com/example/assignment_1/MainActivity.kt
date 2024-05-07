@@ -109,6 +109,10 @@ const val USER_PROFILE_SCREEN = "userProfile"
 const val DIET_PLANNER = "planner"
 const val FORGOT_PASSWORD_SCREEN = "FORGOT_PASSWORD"
 const val UNDER_DEV = "under_development"
+const val NOTIF_SCR = "notification_screen"
+const val NUTRITION_CHART = "nutrition_chart"
+const val DAILY_RECIPE = "daily_recipe"
+
 
 //Database Constants
 const val DATABASE = "MealMate"
@@ -177,13 +181,20 @@ fun AppContent(viewModel: PersonViewModel) {
             DietSelectionPage(navController = navController)
         }
         composable(DIET_PLANNER){
-            DisplayDatePicker(navController = navController)
+//            DisplayDatePicker(navController = navController)
+            RecipeScreenPlan(navController)
         }
         composable(USER_PROFILE_SCREEN){
             MainScreen(navController=navController, viewModel)
         }
         composable(UNDER_DEV){
-            UnderDevelopmentScreen()
+            UnderDevelopmentScreen(navController=navController)
+        }
+        composable(NUTRITION_CHART){
+
+        }
+        composable(DAILY_RECIPE){
+
         }
     }
 }
