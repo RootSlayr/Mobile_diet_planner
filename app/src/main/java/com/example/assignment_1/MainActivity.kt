@@ -97,6 +97,12 @@ import java.util.regex.Pattern
 import java.util.stream.Collectors
 import androidx.lifecycle.viewmodel.*
 import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.delay
 
 
 //NavController Variables
@@ -150,53 +156,99 @@ fun getPref(key: String, type: Class<Any>, context: Context) {
     Gson().fromJson(prefs.getString(key, "{}"), type)
 }
 
+@Composable
+fun StartUpAnimation(){
+    val composition by rememberLottieComposition(spec = LottieCompositionSpec.Url("https://lottie.host/20ec16d7-127f-4c36-a327-756ad24a9551/tjYABykS3s.json"))
+    Column (
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(6.dp)
+    ){
+        LottieAnimation(
+            composition = composition,
+            iterations = LottieConstants.IterateForever,
+            alignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+fun CreateAnimation() {
+    val composition by rememberLottieComposition(spec = LottieCompositionSpec.Url("https://lottie.host/20ec16d7-127f-4c36-a327-756ad24a9551/tjYABykS3s.json"))
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ){
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                alignment = Alignment.Center,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+}
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppContent(viewModel: PersonViewModel) {
     val navController = rememberNavController()
     val isLoggedIn = remember { mutableStateOf(false) }
+    var animationCompleted by remember { mutableStateOf(false) }
 
-    Firebase.auth.addAuthStateListener { auth ->
-        isLoggedIn.value = auth.currentUser != null
+    LaunchedEffect(Unit){
+        delay(5_000)
+        animationCompleted = true
     }
-    println("Current logged in user is ${Firebase.auth.currentUser.toString()}")
-    NavHost(navController, startDestination = if (isLoggedIn.value) HOME_SCREEN else LOGIN_SCREEN) {
-        composable(LOGIN_SCREEN) {
-            LoginScreen(navController)
+
+    if(animationCompleted) {
+        Firebase.auth.addAuthStateListener { auth ->
+            isLoggedIn.value = auth.currentUser != null
         }
-        composable(HOME_SCREEN) {
-            HomeScreen(navController)
-        }
-        composable(SIGNUP_SCREEN) {
-            SignUpScreen(navController = navController)
-        }
-        composable(FORGOT_PASSWORD_SCREEN) {
-            ForgotPasswordScreen(navController = navController)
-        }
-        composable(SETTINGS_SCREEN){
-            SettingsScreen(navController = navController, viewModel = SettingsViewModel())
-        }
-        composable(MEAL_RECIPE_SCREEN){
-            DietSelectionPage(navController = navController)
-        }
-        composable(DIET_PLANNER){
+        println("Current logged in user is ${Firebase.auth.currentUser.toString()}")
+        NavHost(
+            navController,
+            startDestination = if (isLoggedIn.value) HOME_SCREEN else LOGIN_SCREEN
+        ) {
+            composable(LOGIN_SCREEN) {
+                LoginScreen(navController)
+            }
+            composable(HOME_SCREEN) {
+                HomeScreen(navController)
+            }
+            composable(SIGNUP_SCREEN) {
+                SignUpScreen(navController = navController)
+            }
+            composable(FORGOT_PASSWORD_SCREEN) {
+                ForgotPasswordScreen(navController = navController)
+            }
+            composable(SETTINGS_SCREEN) {
+                SettingsScreen(navController = navController, viewModel = SettingsViewModel())
+            }
+            composable(MEAL_RECIPE_SCREEN) {
+                DietSelectionPage(navController = navController)
+            }
+            composable(DIET_PLANNER) {
 //            DisplayDatePicker(navController = navController)
-            RecipeScreenPlan(navController)
+                RecipeScreenPlan(navController)
+            }
+            composable(USER_PROFILE_SCREEN) {
+                MainScreen(navController = navController, viewModel)
+            }
+            composable(UNDER_DEV) {
+                UnderDevelopmentScreen(navController = navController)
+            }
+            composable(DAILY_RECIPE) {
+                DailyRecipeScreen(navController)
+            }
+            composable(NUTRITION_CHART) {
+                NutritionChartScreen(navController)
+            }
         }
-        composable(USER_PROFILE_SCREEN){
-            MainScreen(navController=navController, viewModel)
-        }
-        composable(UNDER_DEV){
-            UnderDevelopmentScreen(navController=navController)
-        }
-        composable(DAILY_RECIPE){
-            DailyRecipeScreen(navController)
-        }
-        composable(NUTRITION_CHART){
-            NutritionChartScreen(navController)
-        }
-    }
+    }else StartUpAnimation()
 }
 
 

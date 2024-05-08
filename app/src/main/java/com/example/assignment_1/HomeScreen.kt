@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 @Composable
 fun HomeScreen(navController: NavController) {
     Surface(color = MaterialTheme.colorScheme.surface) {
+        CreateAnimation()
         Column(
             modifier = Modifier
                 .fillMaxSize()
