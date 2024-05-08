@@ -352,7 +352,7 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
-            label = { Text("Username/Email") }
+            label = { Text("Email") }
         )
 
         // Password TextField
@@ -369,40 +369,53 @@ fun LoginScreen(navController: NavController) {
         // Sign In Button
         Button(
             onClick = {
-                Firebase.auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            UserManagement.instance.findUserByEmail(email)
-                                .addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                        if (dataSnapshot.exists()) {
-                                            for (users in dataSnapshot.children) {
-                                                val data =
-                                                    users.getValue(UserData::class.java)
-                                                savePref(DB_USER, data!!, context)
-                                                navController.navigate(HOME_SCREEN)
-                                                break
+                if(email=="" && password==""){
+                    errorMessage = "Email & Password fields both cannot be empty"
+                    showError = true
+
+                }else if(email==""){
+                    errorMessage = "Email field cannot be empty"
+                    showError = true
+                }else if(password==""){
+                    errorMessage = "Password field cannot be empty"
+                    showError = true
+                }
+                else{
+                    Firebase.auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                UserManagement.instance.findUserByEmail(email)
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                            if (dataSnapshot.exists()) {
+                                                for (users in dataSnapshot.children) {
+                                                    val data =
+                                                        users.getValue(UserData::class.java)
+                                                    savePref(DB_USER, data!!, context)
+                                                    navController.navigate(HOME_SCREEN)
+                                                    break
+                                                }
+                                            } else {
+                                                task.result.user!!.delete()
+                                                Firebase.auth.signOut()
+                                                navController.navigate(SIGNUP_SCREEN)
                                             }
-                                        } else {
-                                            task.result.user!!.delete()
-                                            Firebase.auth.signOut()
-                                            navController.navigate(SIGNUP_SCREEN)
                                         }
-                                    }
 
-                                    override fun onCancelled(error: DatabaseError) {
-                                        Log.e("DataBase Error", error.message)
-                                        errorMessage = "Error Fetching user Data"
-                                        showError = true
-                                    }
+                                        override fun onCancelled(error: DatabaseError) {
+                                            Log.e("DataBase Error", error.message)
+                                            errorMessage = "Error Fetching user Data"
+                                            showError = true
+                                        }
 
-                                })
+                                    })
 
-                        } else {
-                            errorMessage = task.exception?.message!!
-                            showError = true
+                            } else {
+                                errorMessage = task.exception?.message!!
+                                showError = true
+                            }
                         }
-                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -420,7 +433,8 @@ fun LoginScreen(navController: NavController) {
         ) {
             Text("Sign Up")
         }
-        GoogleSignInButton(navController)
+
+        GoogleSignInButton(navController = navController)
 
 //        forgot password
         ClickableText(
