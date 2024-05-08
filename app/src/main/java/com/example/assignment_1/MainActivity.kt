@@ -809,28 +809,6 @@ fun MyButton(
 }
 
 
-@Composable
-fun NutritionLegend(
-    nutritionValues: Map<String, Float>,
-    nutrientColors: Map<String, Color>
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        nutritionValues.forEach { (nutrient, _) ->
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .size(20.dp)
-                    .background(color = nutrientColors[nutrient] ?: Color.Gray)
-            )
-            Text(text = nutrient, modifier = Modifier.padding(start = 4.dp))
-        }
-    }
-}
-
-
 
 // TopBar Component
 @Composable
