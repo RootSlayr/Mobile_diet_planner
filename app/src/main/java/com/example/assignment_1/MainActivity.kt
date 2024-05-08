@@ -1,6 +1,5 @@
 package com.example.assignment_1
 
-import android.app.Application
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
@@ -95,7 +94,6 @@ import java.util.Locale
 import java.util.UUID
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import androidx.lifecycle.viewmodel.*
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import com.airbnb.lottie.compose.LottieAnimation
@@ -765,7 +763,7 @@ fun GoogleSignInButton(navController: NavController) {
 }
 
 @Composable
-fun FeatureRow(icon: ImageVector, text: String) {
+fun FeatureRow(icon: ImageVector, text: String, modifier: Modifier) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,

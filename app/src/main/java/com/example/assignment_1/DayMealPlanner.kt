@@ -270,8 +270,8 @@ fun RecipeScreenPlan(navController: NavController, viewModel: RecipeViewModelPla
 
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Choose your Meal Plan",
-                        style = MaterialTheme.typography.labelLarge
+                        text = "What is special today?",
+                        style = MaterialTheme.typography.headlineSmall
                     )
 
                     ExposedDropdownMenuBox(

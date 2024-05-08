@@ -147,7 +147,7 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                         .padding(vertical = 8.dp, horizontal = 16.dp)
                 ) {
                     Text(
-                        text = "Select Diet for Recepies",
+                        text = "Select a Diet, Set a GOAL, Become a GOAT",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.align(Alignment.CenterStart)
                     )
@@ -164,8 +164,8 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
 
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Choose your Meal Plan",
-                        style = MaterialTheme.typography.labelLarge
+                        text = "See what a diet offers",
+                        style = MaterialTheme.typography.headlineSmall
                     )
 
                     ExposedDropdownMenuBox(
