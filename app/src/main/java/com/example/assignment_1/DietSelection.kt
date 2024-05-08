@@ -2,8 +2,8 @@ package com.example.assignment_1
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,10 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -47,7 +46,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import androidx.compose.material3.Surface
-import androidx.compose.ui.unit.sp
 
 
 data class RecipeResponse(val hits: List<Hit>)
@@ -133,6 +131,8 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
             val recipes by viewModel.recipes
             var selectedRecipe by remember { mutableStateOf("") }
             var expandedRecipe by remember { mutableStateOf<String?>(null) }
+//            val isExpandedCard = remember { mutableStateOf(false) }
+            val expandedCardIndex = remember { mutableStateOf(-1) }
 
             Column(
                 modifier = Modifier
@@ -153,8 +153,11 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                     )
                 }
 
+//                val mealPlans = listOf(
+//                    "Vegan", "Keto", "Vegetarian", "Gluten Free"
+//                )
                 val mealPlans = listOf(
-                    "Vegan", "Keto", "Vegetarian", "Gluten Free"
+                    "Vegan", "Paleo", "Vegetarian", "Kosher"
                 )
                 var isExpanded by remember { mutableStateOf(false) }
                 var selectedMealPlanState by remember { mutableStateOf(mealPlans[0]) }
@@ -203,206 +206,63 @@ fun DietSelectionPage(navController: NavController, viewModel: RecipeViewModel= 
                     selectedRecipe = selectedMealPlanState
 
                     Spacer(modifier = Modifier.height(16.dp))
+
                     when (selectedRecipe) {
-                        "Vegan" -> {
-                            viewModel.fetchRecipes("Vegan")
+                        "Vegan", "Paleo", "Vegetarian", "Kosher" -> {
+                            val category = selectedRecipe.lowercase()
+                            viewModel.fetchRecipes(category)
 
-                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ){
-
-                                items(recipes) { recipe ->
-                                    val isExpandeddisp = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width = 1.dp,
-                                                color = Color.Gray,
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .clickable {
-                                                isExpandeddisp.value = !isExpandeddisp.value
-                                            }
-                                            .height(boxHeight)
-                                    ){
-                                        Column {
-                                            Text(
-                                                text = recipe.label,
-                                                modifier = Modifier.padding(8.dp),
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                            )
-                                            if (isExpandeddisp.value) {
-                                                recipe.ingredientLines.forEach { ingredient ->
-                                                    Text(
-                                                        text = "- $ingredient",
-                                                        modifier = Modifier.padding(
-                                                            start = 16.dp,
-                                                            top = 4.dp
-                                                        ),
-                                                        style = MaterialTheme.typography.bodySmall
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-
-                        }
-
-                        "Keto" -> {
-                            viewModel.fetchRecipes("Keto-Friendly")
-                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
+                            LazyColumn(
+                                modifier = Modifier.padding(vertical = 8.dp),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-
-                                items(recipes) { recipe ->
-                                    val isExpandeddisp = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width = 1.dp,
-                                                color = Color.Gray,
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .clickable {
-                                                isExpandeddisp.value = !isExpandeddisp.value
-                                            }
-                                            .height(boxHeight)
-                                    ){
-                                        Column {
-                                            Text(
-                                                text = recipe.label,
-                                                modifier = Modifier.padding(8.dp),
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                            )
-                                            if (isExpandeddisp.value) {
-                                                recipe.ingredientLines.forEach { ingredient ->
-                                                    Text(
-                                                        text = "- $ingredient",
-                                                        modifier = Modifier.padding(
-                                                            start = 16.dp,
-                                                            top = 4.dp
-                                                        ),
-                                                        style = MaterialTheme.typography.bodySmall
-                                                    )
-                                                }
-                                            }
-                                        }
-
+                                itemsIndexed(recipes) { index, recipe ->
+                                    RecipeCardSelection(recipe = recipe, isExpandedCard = index == expandedCardIndex.value,) {
+                                        expandedCardIndex.value = if (index == expandedCardIndex.value) -1 else index
                                     }
                                 }
                             }
                         }
-
-                        "Vegetarian" -> {
-                            viewModel.fetchRecipes("Vegetarian")
-                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-
-                                items(recipes) { recipe ->
-                                    val isExpandeddisp = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width = 1.dp,
-                                                color = Color.Gray,
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .clickable {
-                                                isExpandeddisp.value = !isExpandeddisp.value
-                                            }
-                                            .height(boxHeight)
-                                    ){
-                                        Column {
-                                            Text(
-                                                text = recipe.label,
-                                                modifier = Modifier.padding(8.dp),
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                            )
-                                            if (isExpandeddisp.value) {
-                                                recipe.ingredientLines.forEach { ingredient ->
-                                                    Text(
-                                                        text = "- $ingredient",
-                                                        modifier = Modifier.padding(
-                                                            start = 16.dp,
-                                                            top = 4.dp
-                                                        ),
-                                                        style = MaterialTheme.typography.bodySmall
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-
-                        "Gluten Free" -> {
-                            viewModel.fetchRecipes("Gluten-free")
-                            LazyColumn (modifier = Modifier.padding(vertical = 8.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-
-                                items(recipes) { recipe ->
-                                    val isExpandeddisp = remember { mutableStateOf(false) }
-                                    var boxHeight = if (isExpandeddisp.value) 200.dp else 100.dp
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width = 1.dp,
-                                                color = Color.Gray,
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .clickable {
-                                                isExpandeddisp.value = !isExpandeddisp.value
-                                            }
-                                            .height(boxHeight)
-                                    ){
-                                        Column {
-                                            Text(
-                                                text = recipe.label,
-                                                modifier = Modifier.padding(8.dp),
-
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
-                                            )
-                                            if (isExpandeddisp.value) {
-                                                recipe.ingredientLines.forEach { ingredient ->
-                                                    Text(
-                                                        text = "- $ingredient",
-                                                        modifier = Modifier.padding(
-                                                            start = 16.dp,
-                                                            top = 4.dp
-                                                        ),
-                                                        style = MaterialTheme.typography.bodySmall
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-
                     }
                 }
             }
         }
     }
     BottomNavigationComponent(navController = navController)
+}
+
+
+@Composable
+fun RecipeCardSelection(recipe: Recipe, isExpandedCard: Boolean, onClick: () -> Unit) {
+//    val isExpandedCard = remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        elevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .animateContentSize()
+        ) {
+            Text(
+                text = recipe.label,
+                style = MaterialTheme.typography.headlineSmall
+            )
+            if (isExpandedCard) {
+                recipe.ingredientLines.forEach { ingredient ->
+                    Text(
+                        text = "- $ingredient",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+            }
+        }
+    }
 }
