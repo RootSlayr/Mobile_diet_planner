@@ -77,8 +77,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.common)
     implementation(libs.google.services)
-    implementation(libs.shared.prefernces)
     implementation(libs.gson)
+    implementation(libs.shared.prefernces)
 
     // Added dependencies for Firebase Authentication
     implementation(libs.firebase.auth)
@@ -111,5 +111,7 @@ dependencies {
     implementation ("androidx.activity:activity-ktx:1.3.1")
     implementation ("androidx.work:work-runtime-ktx:2.7.1")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation ("com.google.android.gms:play-services-auth:20.4.1")
+
     implementation(libs.lottie)
 }
