@@ -685,57 +685,101 @@ fun SignUpScreen(navController: NavController) {
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    Assignment_1Theme {
-        LoginScreen(navController = rememberNavController()) // Empty lambda for now
-    }
-}
+//@Composable
+//fun GoogleSignInButton(navController: NavController) {
+//    val googleLogo: Painter =
+//        painterResource(id = R.drawable.google_logo) // Replace R.drawable.google_logo with your Google logo resource
+//    val context = LocalContext.current
+//    var user by remember { mutableStateOf(Firebase.auth.currentUser) }
+//    val launcher = rememberFirebaseAuthLauncher(
+//        onAuthComplete = { result ->
+//            user = result.user
+//            UserManagement.instance.findUserByEmail(user!!.email!!)
+//                .addListenerForSingleValueEvent(object : ValueEventListener {
+//                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+//                        if (dataSnapshot.exists()) {
+//                            for (users in dataSnapshot.children) {
+//                                val data =
+//                                    users.getValue(UserData::class.java)
+//                                savePref(DB_USER, data!!, context)
+//                                navController.navigate(HOME_SCREEN)
+//                                break
+//                            }
+//                        } else {
+//                            user!!.delete()
+//                            Firebase.auth.signOut()
+//                            navController.navigate(SIGNUP_SCREEN)
+//                        }
+//                    }
+//
+//                    override fun onCancelled(error: DatabaseError) {
+//                        Log.e("DataBase Error", error.message)
+//                        Firebase.auth.signOut()
+//                        navController.navigate(SIGNUP_SCREEN)
+//                    }
+//                })
+//
+//        },
+//        onAuthError = { user = null }
+//    )
+////    val token = stringResource(id = R.string.your_web_client_id)
+//    val token = stringResource(id = R.string.your_web_client_id)
+//    Button(
+//        onClick = {
+//
+//            val signInOptions =
+//                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                    .requestIdToken(token)
+//                    .requestEmail()
+//                    .build()
+//            val googleSignInClient = GoogleSignIn.getClient(context, signInOptions)
+//            launcher.launch(googleSignInClient.signInIntent)
+//
+//        },
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(top = 8.dp)
+//    ) {
+//        Row(
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Image(
+//                painter = googleLogo,
+//                contentDescription = "Google Logo",
+//                modifier = Modifier.size(24.dp) // Adjust size as needed
+//            )
+//            Spacer(modifier = Modifier.width(8.dp)) // Add spacing between the logo and text
+//            Text("Sign In with Google")
+//        }
+//    }
+//}
 
 @Composable
 fun GoogleSignInButton(navController: NavController) {
     val googleLogo: Painter =
-        painterResource(id = R.drawable.google_logo) // Replace R.drawable.google_logo with your Google logo resource
+        painterResource(id = R.drawable.google_logo)
     val context = LocalContext.current
-    var user by remember { mutableStateOf(Firebase.auth.currentUser) }
+
     val launcher = rememberFirebaseAuthLauncher(
         onAuthComplete = { result ->
-            user = result.user
-            UserManagement.instance.findUserByEmail(user!!.email!!)
-                .addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            for (users in dataSnapshot.children) {
-                                val data =
-                                    users.getValue(UserData::class.java)
-                                savePref(DB_USER, data!!, context)
-                                navController.navigate(HOME_SCREEN)
-                                break
-                            }
-                        } else {
-                            user!!.delete()
-                            Firebase.auth.signOut()
-                            navController.navigate(SIGNUP_SCREEN)
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.e("DataBase Error", error.message)
-                        Firebase.auth.signOut()
-                        navController.navigate(SIGNUP_SCREEN)
-                    }
-                })
-
+            val user = result.user
+            if (user != null) {
+                navController.navigate(HOME_SCREEN)
+            } else {
+                // Handle null user
+                Log.e("Auth Error", "User is null")
+                navController.navigate(SIGNUP_SCREEN)
+            }
         },
-        onAuthError = { user = null }
+        onAuthError = {
+            Log.e("Auth Error", "Authentication error: ${it.message}")
+            navController.navigate(SIGNUP_SCREEN)
+        }
     )
-//    val token = stringResource(id = R.string.your_web_client_id)
+
     val token = stringResource(id = R.string.your_web_client_id)
     Button(
         onClick = {
-
             val signInOptions =
                 GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(token)
@@ -743,7 +787,6 @@ fun GoogleSignInButton(navController: NavController) {
                     .build()
             val googleSignInClient = GoogleSignIn.getClient(context, signInOptions)
             launcher.launch(googleSignInClient.signInIntent)
-
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -763,6 +806,8 @@ fun GoogleSignInButton(navController: NavController) {
     }
 }
 
+
+
 @Composable
 fun FeatureRow(icon: ImageVector, text: String, modifier: Modifier) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -774,14 +819,6 @@ fun FeatureRow(icon: ImageVector, text: String, modifier: Modifier) {
         Text(text = text)
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    val navController = rememberNavController()
-    HomeScreen(navController)
-}
-
 
 @Composable
 fun MyButton(

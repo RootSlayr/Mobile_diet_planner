@@ -1,6 +1,7 @@
 package com.example.assignment_1.service
 
 import android.content.Intent
+import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -41,7 +42,7 @@ class UserManagement {
             .setValue(data)
     }
 
-    fun findUserByEmail(email: String): Query {
+    fun findUserByEmail(email: String?): Query {
         return tables.child(DB_USER)
             .orderByChild("email")
             .equalTo(email)
@@ -49,7 +50,6 @@ class UserManagement {
     }
 
 }
-
 
 @Composable
 fun rememberFirebaseAuthLauncher(
@@ -60,15 +60,28 @@ fun rememberFirebaseAuthLauncher(
     return rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
-            val account = task.getResult(ApiException::class.java)!!
-            val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
-            scope.launch {
-                val authResult = Firebase.auth.signInWithCredential(credential).await()
-                onAuthComplete(authResult)
+            val account = task.getResult(ApiException::class.java)
+            if (account != null) {
+                val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
+                scope.launch {
+                    try {
+                        val authResult = Firebase.auth.signInWithCredential(credential).await()
+                        onAuthComplete(authResult)
+                    } catch (e: Exception) {
+                        // Handle authentication error
+                        Log.e("Firebase Auth", "Error signing in with credential: ${e.message}")
+                    }
+                }
+            } else {
+                // Handle null account
+                Log.e("Google Sign-In", "Google sign-in account is null")
             }
         } catch (e: ApiException) {
+            // Handle API exception
+            Log.e("Google Sign-In", "API exception: ${e.message}")
             onAuthError(e)
         }
+
     }
 }
 
