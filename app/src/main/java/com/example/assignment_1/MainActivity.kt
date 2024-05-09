@@ -732,7 +732,7 @@ fun GoogleSignInButton(navController: NavController) {
         onAuthError = { user = null }
     )
 //    val token = stringResource(id = R.string.your_web_client_id)
-    val token = stringResource(id = R.string.web_client_id)
+    val token = stringResource(id = R.string.your_web_client_id)
     Button(
         onClick = {
 

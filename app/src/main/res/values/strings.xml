@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Assignment_1</string>
     <string name="your_web_client_id">65010015122-te0u0f9p510ftvqa2svr33e1vpd91jti.apps.googleusercontent.com</string>
-    <string name="web_client_id">977495440560-hlbb0pm41tjf2i13262sal33lmhor93a.apps.googleusercontent.com</string>
+<!--    <string name="web_client_id">977495440560-hlbb0pm41tjf2i13262sal33lmhor93a.apps.googleusercontent.com</string>-->
 
 </resources>
