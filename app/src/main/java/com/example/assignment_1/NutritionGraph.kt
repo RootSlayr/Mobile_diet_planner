@@ -136,9 +136,8 @@ fun PieChart(nutrients: List<Pair<String, Double>>) {
 //        valueTextSize = if (selectedEntry == null) 12f else 16f // Increase text size for highlighted entry
         setColors(colors)
     }
-//    dataSet.colors = ColorTemplate.COLORFUL_COLORS.toList()
-//    dataSet.valueTextSize = 12f
-    dataSet.valueTextColor = Color.BLACK
+
+    dataSet.valueTextColor = Color.YELLOW
 
     // Set value position inside slice
     dataSet.xValuePosition = PieDataSet.ValuePosition.INSIDE_SLICE

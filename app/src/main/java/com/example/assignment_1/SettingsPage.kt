@@ -55,7 +55,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                                 }
                                 else {
                                     // Navigate to the under development screen
-                                    navController.navigate("under_development")
+                                    navController.navigate(UNDER_DEV)
                                 }
                             })
                         }
@@ -104,7 +104,7 @@ class SettingsViewModel : ViewModel() {
         "Privacy",
         "Security",
         "Data Usage",
-        "LogOut",
+        "Log Out",
         "",
         // Add more settings items as needed
     )
