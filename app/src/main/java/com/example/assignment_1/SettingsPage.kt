@@ -49,7 +49,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                                 if (setting == "Account") {
                                     // Navigate to the profile screen
                                     navController.navigate(USER_PROFILE_SCREEN)
-                                }else if(setting == "LogOut"){
+                                }else if(setting == "Log Out"){
                                     Firebase.auth.signOut()
                                     navController.navigate(LOGIN_SCREEN)
                                 }

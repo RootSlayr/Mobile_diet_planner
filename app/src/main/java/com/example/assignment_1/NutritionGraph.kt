@@ -108,6 +108,7 @@ fun generateUniqueColors(count: Int): List<Int> {
 }
 @Composable
 fun PieChart(nutrients: List<Pair<String, Double>>) {
+    val recipeName = recipeState.value?.label
     val excludedNutrients = setOf(
         "Energy",
         "Water",
@@ -152,7 +153,7 @@ fun PieChart(nutrients: List<Pair<String, Double>>) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Title at the top of the screen
         Text(
-            text = "Nutrition Graph",
+            text = "Nutrition Chart of:\n$recipeName ",
             style = MaterialTheme.typography.h6,
             modifier = Modifier
                 .fillMaxWidth()
